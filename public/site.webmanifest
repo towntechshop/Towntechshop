@@ -1,0 +1,21 @@
+{
+  "name": "Town Tech",
+  "short_name": "Town Tech",
+  "icons": [
+    {
+      "src": "/brand-icon.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/jpeg"
+    }
+  ],
+  "theme_color": "#07111F",
+  "background_color": "#07111F",
+  "display": "standalone",
+  "lang": "ar",
+  "dir": "rtl"
+}
