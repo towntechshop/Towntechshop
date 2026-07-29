@@ -71,16 +71,21 @@ export default function AdminCategories() {
   const uploadCategoryImage = async (file) => {
     if (!file) return ''
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+    const fileExt = file.name.split('.').pop() || 'bin'
+    const safeExt = fileExt.toLowerCase()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${safeExt}`
     const filePath = `categories/${fileName}`
 
     const { error: uploadError } = await supabase.storage
       .from('product-images')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
 
     if (uploadError) {
-      throw uploadError
+      const message = uploadError.message || 'فشل رفع الصورة إلى Supabase'
+      throw new Error(`فشل رفع الصورة: ${message}`)
     }
 
     const { data: publicUrlData } = supabase.storage
