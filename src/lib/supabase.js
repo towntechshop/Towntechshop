@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
 export function resolveSupabaseConfig(env = import.meta.env) {
-  const url = env.VITE_SUPABASE_URL?.trim()
+  const safeEnv = env || {}
+  const url = safeEnv.VITE_SUPABASE_URL?.trim()
   const key = (
-    env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-    env.VITE_SUPABASE_ANON_KEY?.trim() ||
-    env.SUPABASE_ANON_KEY?.trim() ||
-    env.SUPABASE_PUBLISHABLE_KEY?.trim()
+    safeEnv.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    safeEnv.VITE_SUPABASE_ANON_KEY?.trim() ||
+    safeEnv.SUPABASE_ANON_KEY?.trim() ||
+    safeEnv.SUPABASE_PUBLISHABLE_KEY?.trim()
   )
 
   return { url, key }
@@ -20,4 +21,10 @@ if (!supabaseUrl || !supabaseKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
+export const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
+
+export function getSupabaseStorageHint(bucketName) {
+  return `إذا كان رفع الصورة يفشل، فتحقق من إنشاء bucket باسم "${bucketName}" في Supabase Storage وجعله Public.`
+}

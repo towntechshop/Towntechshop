@@ -332,7 +332,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    getHomeData()
+    void getHomeData()
   }, [])
 
   const heroImageUrl = settings?.hero_image_url || ''

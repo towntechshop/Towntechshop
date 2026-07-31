@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { getSupabaseStorageHint, supabase } from '../lib/supabase'
+import { buildStorageFilePath, getStorageUploadErrorMessage } from '../lib/storage'
 import { Field, SectionTitle } from './components/AdminFormFields'
 
 export default function EditProduct() {
@@ -136,14 +137,7 @@ export default function EditProduct() {
       throw new Error('لم يتم اختيار صورة')
     }
 
-    const fileExt = file.name.split('.').pop() || 'bin'
-    const safeExt = fileExt.toLowerCase()
-
-    const fileName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2)}.${safeExt}`
-
-    const filePath = `products/${fileName}`
+    const filePath = buildStorageFilePath('products', file)
 
     const { error: uploadError } = await supabase.storage
       .from('product-images')
@@ -153,8 +147,7 @@ export default function EditProduct() {
       })
 
     if (uploadError) {
-      const message = uploadError.message || 'فشل رفع الصورة إلى Supabase'
-      throw new Error(`فشل رفع الصورة: ${message}`)
+      throw new Error(getStorageUploadErrorMessage(uploadError, 'product-images'))
     }
 
     const { data: publicUrlData } = supabase.storage
