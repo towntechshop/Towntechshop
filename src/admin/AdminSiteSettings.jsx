@@ -34,6 +34,7 @@ export default function AdminSiteSettings() {
     footer_description: '',
     paymob_enabled: false,
     paymob_api_key: '',
+    paymob_public_key: '',
     paymob_merchant_id: '',
     paymob_integration_id: '',
     paymob_iframe_id: '',
@@ -130,6 +131,7 @@ export default function AdminSiteSettings() {
         footer_description: data.footer_description || '',
         paymob_enabled: data.paymob_enabled || false,
         paymob_api_key: data.paymob_api_key || '',
+        paymob_public_key: data.paymob_public_key || '',
         paymob_merchant_id: data.paymob_merchant_id || '',
         paymob_integration_id: data.paymob_integration_id || '',
         paymob_iframe_id: data.paymob_iframe_id || '',
@@ -361,6 +363,7 @@ export default function AdminSiteSettings() {
         footer_description: settings.footer_description,
         paymob_enabled: settings.paymob_enabled,
         paymob_api_key: settings.paymob_api_key,
+        paymob_public_key: settings.paymob_public_key,
         paymob_merchant_id: settings.paymob_merchant_id,
         paymob_integration_id: settings.paymob_integration_id,
         paymob_iframe_id: settings.paymob_iframe_id,
@@ -782,25 +785,25 @@ export default function AdminSiteSettings() {
           </div>
 
           <div className="grid grid-cols-1 gap-5">
-            <Field label="Paymob API Key">
+            <Field label="Paymob Secret Key">
               <input
-                type="text"
+                type="password"
                 name="paymob_api_key"
                 value={settings.paymob_api_key}
                 onChange={handleChange}
-                placeholder="أدخل Paymob API Key"
+                placeholder="egy_sk_live_..."
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />
             </Field>
 
-            <Field label="Merchant ID">
+            <Field label="Paymob Public Key">
               <input
                 type="text"
-                name="paymob_merchant_id"
-                value={settings.paymob_merchant_id}
+                name="paymob_public_key"
+                value={settings.paymob_public_key}
                 onChange={handleChange}
-                placeholder="أدخل Merchant ID"
+                placeholder="egy_pk_live_..."
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />
@@ -812,31 +815,31 @@ export default function AdminSiteSettings() {
                 name="paymob_integration_id"
                 value={settings.paymob_integration_id}
                 onChange={handleChange}
-                placeholder="أدخل Integration ID"
+                placeholder="4239389"
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />
             </Field>
 
-            <Field label="Iframe ID">
+            <Field label="Merchant ID (اختياري)">
               <input
                 type="text"
-                name="paymob_iframe_id"
-                value={settings.paymob_iframe_id}
+                name="paymob_merchant_id"
+                value={settings.paymob_merchant_id}
                 onChange={handleChange}
-                placeholder="أدخل Paymob Iframe ID"
+                placeholder="Merchant ID"
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />
             </Field>
 
-            <Field label="HMAC Secret (اختياري)">
+            <Field label="HMAC Secret (لتأكيد الدفع)">
               <input
-                type="text"
+                type="password"
                 name="paymob_hmac_secret"
                 value={settings.paymob_hmac_secret}
                 onChange={handleChange}
-                placeholder="أدخل HMAC Secret إذا وجدت"
+                placeholder="من لوحة Paymob → Settings → API Keys"
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />

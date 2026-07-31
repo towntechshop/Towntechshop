@@ -59,9 +59,57 @@ SELECT id, email FROM auth.users WHERE email = 'admin@example.com';
 
 **الإعداد في Supabase:** Storage → New bucket → Public → فعّل القراءة العامة.
 
-### Edge Function (Paymob)
+### Edge Functions (Paymob)
 
-الدفع الإلكتروني عبر Paymob يحتاج Edge Function باسم `paymob-session` (غير مضمّنة في المستودع). فعّل Paymob من **إعدادات الموقع** في لوحة التحكم.
+الدفع الإلكتروني عبر Paymob يستخدم **Intention API** (Unified Checkout). الملفات موجودة في:
+
+- `supabase/functions/paymob-session` — إنشاء جلسة دفع وإرجاع رابط بوابة Paymob
+- `supabase/functions/paymob-webhook` — استقبال تأكيد الدفع وتحديث حالة الطلب
+
+#### 1) ترحيل قاعدة البيانات
+
+شغّل من SQL Editor:
+
+```sql
+-- supabase/add_paymob_public_key.sql
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS paymob_public_key TEXT;
+```
+
+#### 2) نشر Edge Functions
+
+```bash
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase functions deploy paymob-session
+npx supabase functions deploy paymob-webhook
+```
+
+#### 3) أسرار Supabase (موصى به للإنتاج)
+
+في **Project Settings → Edge Functions → Secrets**:
+
+| Secret | الوصف |
+|--------|--------|
+| `PAYMOB_SECRET_KEY` | Secret Key من Paymob (`egy_sk_live_...`) |
+| `PAYMOB_PUBLIC_KEY` | Public Key (`egy_pk_live_...`) |
+| `PAYMOB_INTEGRATION_ID` | Integration ID (مثل `4239389`) |
+| `PAYMOB_HMAC_SECRET` | HMAC Secret لتأكيد webhook |
+| `SITE_URL` | رابط الموقع (مثل `https://yourdomain.com`) |
+
+#### 4) إعدادات لوحة التحكم
+
+من **إعدادات الموقع → إعدادات الدفع**:
+
+1. فعّل **Paymob**
+2. أدخل **Secret Key** و **Public Key** و **Integration ID**
+3. أضف **HMAC Secret** لتأكيد الدفع تلقائياً
+
+#### تدفق الدفع
+
+1. العميل يختار «بطاقة فيزا/ماستر عبر Paymob» في صفحة إتمام الطلب
+2. يُنشأ الطلب ثم يُوجَّه تلقائياً إلى بوابة Paymob
+3. بعد الدفع يعود إلى `/order-success`
+4. Webhook يحدّث `payment_status` إلى `paid`
 
 ## النشر على Vercel
 

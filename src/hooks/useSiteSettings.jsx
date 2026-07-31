@@ -36,6 +36,7 @@ export const defaultSettings = {
   hero_image_url: '',
   paymob_enabled: false,
   paymob_api_key: '',
+  paymob_public_key: '',
   paymob_merchant_id: '',
   paymob_integration_id: '',
   paymob_iframe_id: '',

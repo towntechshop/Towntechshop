@@ -113,7 +113,7 @@ export default function Checkout() {
   const isPaymobReady =
     siteSettings.paymob_enabled &&
     siteSettings.paymob_integration_id &&
-    siteSettings.paymob_iframe_id
+    siteSettings.paymob_public_key
 
   const onSitePaymentMethods = ['paymob', 'vodafone_cash', 'instapay']
 
@@ -386,7 +386,7 @@ export default function Checkout() {
                       label: 'بطاقة فيزا/ماستر عبر Paymob',
                       disabled: !isPaymobReady,
                       hint: !isPaymobReady
-                        ? 'يتطلب تفعيل Paymob وإضافة Integration ID وIframe ID.'
+                        ? 'يتطلب تفعيل Paymob وإضافة Integration ID و Public Key.'
                         : undefined,
                     },
                     {

@@ -93,19 +93,21 @@ export default function Payment() {
       if (
         !siteSettings.paymob_enabled ||
         !siteSettings.paymob_integration_id ||
-        !siteSettings.paymob_iframe_id
+        !siteSettings.paymob_public_key
       ) {
-        setErrorMessage('لم يتم إعداد Paymob بالكامل بعد. الرجاء إضافة إعدادات Paymob.')
+        setErrorMessage(
+          'لم يتم إعداد Paymob بالكامل بعد. فعّل Paymob وأضف Integration ID و Public Key من لوحة التحكم.'
+        )
         setLoading(false)
         return
       }
 
       try {
         const { data, error } = await supabase.functions.invoke('paymob-session', {
-          body: JSON.stringify({
+          body: {
             order_id: orderId,
             payment_method: method,
-          }),
+          },
         })
 
         if (error) {
@@ -136,6 +138,16 @@ export default function Payment() {
 
     createPaymentSession()
   }, [orderId, method, siteSettings, isManualPayment])
+
+  useEffect(() => {
+    if (!paymentUrl || method !== 'paymob' || loading || errorMessage) {
+      return
+    }
+
+    clearCart()
+    clearCheckoutOrderNotes()
+    window.location.assign(paymentUrl)
+  }, [paymentUrl, method, loading, errorMessage])
 
   const transferPhone = siteSettings.phone || siteSettings.whatsapp || ''
   const orderTotal = pendingOrder?.total
@@ -266,18 +278,18 @@ export default function Payment() {
         ) : (
           <div className="space-y-4">
             <p className="text-slate-500 font-bold">
-              اضغط على الزر التالي للمتابعة إلى الدفع داخل موقع Paymob.
+              جاري تحويلك إلى بوابة الدفع الآمنة...
             </p>
 
-            <a
-              href={paymentUrl}
-              onClick={handlePaymobStart}
-              className="inline-block bg-slate-950 text-white px-6 py-3 rounded-2xl font-black hover:bg-slate-800 transition"
-              target="_blank"
-              rel="noreferrer"
-            >
-              إكمال الدفع الآن
-            </a>
+            {paymentUrl && (
+              <a
+                href={paymentUrl}
+                onClick={handlePaymobStart}
+                className="inline-block bg-slate-950 text-white px-6 py-3 rounded-2xl font-black hover:bg-slate-800 transition"
+              >
+                متابعة الدفع يدوياً
+              </a>
+            )}
 
             <p className="text-sm text-slate-500 font-bold">
               بعد إتمام الدفع سيتم توجيهك إلى صفحة نجاح الطلب.
