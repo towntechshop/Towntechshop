@@ -224,8 +224,97 @@ const benefitCards = [
   },
 ]
 
-function getCategoryInitial(name) {
-  return String(name || '?').trim().charAt(0) || '?'
+function getCategoryIconName(name) {
+  const normalized = String(name || '').toLowerCase()
+
+  if (normalized.includes('شبكات') || normalized.includes('network')) return 'network'
+  if (normalized.includes('العناية') || normalized.includes('personal')) return 'care'
+  if (normalized.includes('كمبيوتر') || normalized.includes('computer') || normalized.includes('pc')) return 'computer'
+  if (normalized.includes('لاب') || normalized.includes('laptop')) return 'laptop'
+  if (normalized.includes('مراقبة') || normalized.includes('surveillance') || normalized.includes('camera')) return 'camera'
+  if (normalized.includes('كاشير') || normalized.includes('cashier') || normalized.includes('نقطة بيع')) return 'cashier'
+
+  return 'default'
+}
+
+function CategoryIcon({ type }) {
+  const iconProps = {
+    className: 'w-10 h-10',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
+
+  if (type === 'network') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <path d="M6 18a4 4 0 0 1 8 0" />
+        <path d="M12 14V6" />
+        <path d="M9 9h6" />
+        <path d="M5 22h14" />
+      </svg>
+    )
+  }
+
+  if (type === 'computer') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <rect x="3" y="5" width="18" height="12" rx="2" />
+        <path d="M8 21h8" />
+        <path d="M12 17v4" />
+      </svg>
+    )
+  }
+
+  if (type === 'laptop') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <rect x="3" y="6" width="18" height="11" rx="2" />
+        <path d="M2 18h20" />
+      </svg>
+    )
+  }
+
+  if (type === 'camera') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M8 6l1-2h6l1 2" />
+      </svg>
+    )
+  }
+
+  if (type === 'care') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <path d="M12 20s-6-4.35-6-10.5S8 3 12 3s6 2.5 6 6.5S12 20 12 20Z" />
+        <path d="M8 12h8" />
+      </svg>
+    )
+  }
+
+  if (type === 'cashier') {
+    return (
+      <svg viewBox="0 0 24 24" {...iconProps}>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <path d="M8 10h8" />
+        <path d="M12 14h4" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" {...iconProps}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+    </svg>
+  )
 }
 
 function CategoryImageLink({ category, imageUrl, variant = 'mobile', index = 0 }) {
@@ -236,6 +325,7 @@ function CategoryImageLink({ category, imageUrl, variant = 'mobile', index = 0 }
     : 'category-image-pop h-[92px] sm:h-[100px] w-auto max-w-full object-contain object-center group-active:scale-95'
 
   const popDelay = index * 180 + 650
+  const iconType = getCategoryIconName(category.name)
 
   return (
     <Link
@@ -252,9 +342,16 @@ function CategoryImageLink({ category, imageUrl, variant = 'mobile', index = 0 }
           loading="lazy"
         />
       ) : (
-        <span className="text-[#0B1F3A] font-black text-lg lg:text-xl transition-transform duration-300 group-hover:scale-110">
-          {getCategoryInitial(category.name)}
-        </span>
+        <div className="relative flex items-center justify-center rounded-3xl bg-slate-100 border border-slate-200 w-[92px] h-[92px] sm:w-[100px] sm:h-[100px] lg:w-[120px] lg:h-[120px]">
+          <div className="text-slate-900 flex flex-col items-center justify-center gap-2">
+            <div className="inline-flex items-center justify-center rounded-2xl bg-slate-200 text-slate-900 p-3">
+              <CategoryIcon type={iconType} />
+            </div>
+            <span className="text-[11px] leading-4 font-black text-slate-700 text-center px-1">
+              {category.name}
+            </span>
+          </div>
+        </div>
       )}
     </Link>
   )
@@ -506,21 +603,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 py-6 md:py-10">
-        <div className="max-w-[980px] mx-auto">
-          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-6 md:p-10 text-center">
-            <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
-            <div className="space-y-4">
-              {STORE_SEO_DESCRIPTION_LINES.map((line) => (
-                <p
-                  key={line}
-                  className="text-slate-700 font-semibold text-sm md:text-base leading-7"
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
+      <section className="px-4 py-6 md:py-8">
+        <div className="max-w-[980px] mx-auto text-center">
+          <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
+          {STORE_SEO_DESCRIPTION_LINES.map((line) => (
+            <p
+              key={line}
+              className="text-slate-600 font-bold text-sm md:text-base leading-8"
+            >
+              {line}
+            </p>
+          ))}
         </div>
       </section>
 
