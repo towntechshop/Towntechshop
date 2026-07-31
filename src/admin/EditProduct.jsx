@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { getSupabaseStorageHint, supabase } from '../lib/supabase'
 import { buildStorageFilePath, getStorageUploadErrorMessage } from '../lib/storage'
 import { Field, SectionTitle } from './components/AdminFormFields'
 
 export default function EditProduct() {
   const { id } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
+
+  const pageQuery = new URLSearchParams(location.search).get('page')
+  const returnPage = pageQuery ? Number(pageQuery) : 1
 
   const [allCategories, setAllCategories] = useState([])
   const [parentCategoryId, setParentCategoryId] = useState('')
@@ -220,7 +224,7 @@ export default function EditProduct() {
         throw updateError
       }
 
-      navigate('/admin/products')
+      navigate(`/admin/products?page=${returnPage}`)
     } catch (error) {
       setErrorMessage(error.message || 'حدث خطأ أثناء حفظ المنتج')
     } finally {
@@ -247,7 +251,7 @@ export default function EditProduct() {
       <div dir="rtl">
         <div className="mb-6">
           <Link
-            to="/admin/products"
+            to={`/admin/products?page=${returnPage}`}
             className="inline-flex bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition mb-4"
           >
             الرجوع للمنتجات
@@ -279,7 +283,7 @@ export default function EditProduct() {
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <Link
-            to="/admin/products"
+            to={`/admin/products?page=${returnPage}`}
             className="inline-flex bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition mb-4"
           >
             الرجوع للمنتجات

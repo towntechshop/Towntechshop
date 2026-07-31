@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import {
+  getDashboardCache,
+  isDashboardCacheValid,
+  setDashboardCache,
+} from '../lib/adminDashboardCache'
 
 const LOW_STOCK_LIMIT = 3
 
@@ -32,31 +37,19 @@ export default function AdminDashboard() {
   const [lowStockProducts, setLowStockProducts] = useState([])
   const [outOfStockProducts, setOutOfStockProducts] = useState([])
 
-  const getDashboardData = async () => {
-    setLoading(true)
+  const applyDashboardPayload = (payload) => {
+    if (!payload) return
 
-    const { data: products, error: productsError } = await supabase
-      .from('products')
-      .select(
-        'id, title, image_url, price, regular_price, sale_price, is_visible, is_featured, stock_quantity, is_in_stock, created_at'
-      )
-      .order('created_at', { ascending: false })
+    const { stats: nextStats, recentProducts: nextRecentProducts, recentOrders: nextRecentOrders, lowStockProducts: nextLowStockProducts, outOfStockProducts: nextOutOfStockProducts } = payload
 
-    const { count: pagesCount, error: pagesError } = await supabase
-      .from('site_pages')
-      .select('id', { count: 'exact', head: true })
+    setStats(nextStats)
+    setRecentProducts(nextRecentProducts)
+    setRecentOrders(nextRecentOrders)
+    setLowStockProducts(nextLowStockProducts)
+    setOutOfStockProducts(nextOutOfStockProducts)
+  }
 
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select(
-        'id, order_number, customer_name, customer_phone, total_amount, status, payment_status, created_at'
-      )
-      .order('created_at', { ascending: false })
-
-    if (productsError) console.error(productsError)
-    if (pagesError) console.error(pagesError)
-    if (ordersError) console.error(ordersError)
-
+  const buildDashboardPayload = ({ products, pagesCount, orders }) => {
     const safeProducts = products || []
     const safeOrders = orders || []
 
@@ -84,40 +77,78 @@ export default function AdminDashboard() {
       0
     )
 
-    setStats({
-      totalProducts: safeProducts.length,
-      visibleProducts: safeProducts.filter((product) => product.is_visible)
-        .length,
-      hiddenProducts: safeProducts.filter((product) => !product.is_visible)
-        .length,
-      featuredProducts: safeProducts.filter((product) => product.is_featured)
-        .length,
-      pagesCount: pagesCount || 0,
+    return {
+      stats: {
+        totalProducts: safeProducts.length,
+        visibleProducts: safeProducts.filter((product) => product.is_visible)
+          .length,
+        hiddenProducts: safeProducts.filter((product) => !product.is_visible)
+          .length,
+        featuredProducts: safeProducts.filter((product) => product.is_featured)
+          .length,
+        pagesCount: pagesCount || 0,
 
-      lowStockProducts: lowStockList.length,
-      outOfStockProducts: outOfStockList.length,
+        lowStockProducts: lowStockList.length,
+        outOfStockProducts: outOfStockList.length,
 
-      totalOrders: safeOrders.length,
-      newOrders: safeOrders.filter((order) => order.status === 'new').length,
-      processingOrders: safeOrders.filter(
-        (order) => order.status === 'processing'
-      ).length,
-      deliveredOrders: safeOrders.filter(
-        (order) => order.status === 'delivered'
-      ).length,
-      cancelledOrders: safeOrders.filter(
-        (order) => order.status === 'cancelled'
-      ).length,
+        totalOrders: safeOrders.length,
+        newOrders: safeOrders.filter((order) => order.status === 'new').length,
+        processingOrders: safeOrders.filter(
+          (order) => order.status === 'processing'
+        ).length,
+        deliveredOrders: safeOrders.filter(
+          (order) => order.status === 'delivered'
+        ).length,
+        cancelledOrders: safeOrders.filter(
+          (order) => order.status === 'cancelled'
+        ).length,
 
-      deliveredPaidOrders: deliveredPaidOrders.length,
-      deliveredPaidRevenue,
-    })
+        deliveredPaidOrders: deliveredPaidOrders.length,
+        deliveredPaidRevenue,
+      },
+      recentProducts: safeProducts.slice(0, 5),
+      recentOrders: safeOrders.slice(0, 5),
+      lowStockProducts: lowStockList.slice(0, 8),
+      outOfStockProducts: outOfStockList.slice(0, 8),
+    }
+  }
 
-    setRecentProducts(safeProducts.slice(0, 5))
-    setRecentOrders(safeOrders.slice(0, 5))
-    setLowStockProducts(lowStockList.slice(0, 8))
-    setOutOfStockProducts(outOfStockList.slice(0, 8))
+  const getDashboardData = async ({ useCached = true, showLoading = true } = {}) => {
+    if (showLoading) setLoading(true)
 
+    const cachedDashboard = useCached ? getDashboardCache() : null
+    const cachedPayload = cachedDashboard?.data
+
+    if (cachedPayload && isDashboardCacheValid(cachedDashboard)) {
+      applyDashboardPayload(cachedPayload)
+      setLoading(false)
+    }
+
+    const { data: products, error: productsError } = await supabase
+      .from('products')
+      .select(
+        'id, title, image_url, price, regular_price, sale_price, is_visible, is_featured, stock_quantity, is_in_stock, created_at'
+      )
+      .order('created_at', { ascending: false })
+
+    const { count: pagesCount, error: pagesError } = await supabase
+      .from('site_pages')
+      .select('id', { count: 'exact', head: true })
+
+    const { data: orders, error: ordersError } = await supabase
+      .from('orders')
+      .select(
+        'id, order_number, customer_name, customer_phone, total_amount, status, payment_status, created_at'
+      )
+      .order('created_at', { ascending: false })
+
+    if (productsError) console.error(productsError)
+    if (pagesError) console.error(pagesError)
+    if (ordersError) console.error(ordersError)
+
+    const payload = buildDashboardPayload({ products, pagesCount, orders })
+    applyDashboardPayload(payload)
+    setDashboardCache(payload)
     setLoading(false)
   }
 
