@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const PRODUCTS_PER_PAGE = 10
 
 export default function AdminProducts() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const isInitialLoad = useRef(true)
-
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
 
@@ -19,16 +16,10 @@ export default function AdminProducts() {
   const [stockFilter, setStockFilter] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
 
-  const currentPage = Number(searchParams.get('page')) || 1
+  const [currentPage, setCurrentPage] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
-
-  const updatePageQuery = (page) => {
-    const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.set('page', String(page))
-    setSearchParams(nextParams)
-  }
 
   const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE) || 1
 
@@ -108,9 +99,7 @@ export default function AdminProducts() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.set('page', '1')
-    setSearchParams(nextParams)
+    setCurrentPage(1)
     setSearchTerm(searchInput)
   }
 
@@ -121,9 +110,7 @@ export default function AdminProducts() {
     setVisibilityFilter('all')
     setFeaturedFilter('all')
     setStockFilter('all')
-    const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.set('page', '1')
-    setSearchParams(nextParams)
+    setCurrentPage(1)
   }
 
   const toggleVisibility = async (product) => {
@@ -228,13 +215,8 @@ export default function AdminProducts() {
   }, [])
 
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false
-      return
-    }
-
-    setSearchParams({ page: '1' })
-  }, [selectedCategory, visibilityFilter, featuredFilter, stockFilter, setSearchParams])
+    setCurrentPage(1)
+  }, [selectedCategory, visibilityFilter, featuredFilter, stockFilter])
 
   useEffect(() => {
     getProducts()
@@ -588,7 +570,8 @@ export default function AdminProducts() {
                         <td className="p-4">
                           <div className="flex flex-wrap gap-2">
                             <Link
-                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}
+                              to={`/admin/products/edit/${product.id}`}
+                              className="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black hover:bg-blue-100 transition"
                             >
                               تعديل
                             </Link>
@@ -715,8 +698,7 @@ export default function AdminProducts() {
 
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <Link
-                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}
-                        state={{ returnPage: currentPage }}
+                        to={`/admin/products/edit/${product.id}`}
                         className="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl font-black text-center hover:bg-blue-100 transition"
                       >
                         تعديل
@@ -746,7 +728,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    updatePageQuery(Math.max(currentPage - 1, 1))
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
                   disabled={currentPage === 1}
                   className="px-5 py-3 rounded-2xl bg-slate-100 text-slate-950 font-black hover:bg-slate-200 disabled:opacity-50 transition"
@@ -757,7 +739,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    updatePageQuery(Math.min(currentPage + 1, totalPages))
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
                   className="px-5 py-3 rounded-2xl bg-slate-950 text-white font-black hover:bg-slate-800 disabled:opacity-50 transition"
