@@ -11,8 +11,8 @@ function SecurityBanner({ linkUrl, imageUrl }) {
           <div className="absolute inset-0 bg-gradient-to-l from-[#07111F] via-[#0B2A45] to-[#1E5A83]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(56,189,248,0.25),transparent_45%)]" />
 
-          <div className="relative z-10 flex items-center justify-between gap-4 p-5 md:p-8">
-            <div className="text-white text-right flex-1">
+          <div className="relative z-10 p-5 md:p-8">
+            <div className="text-white text-right">
               <span className="inline-block bg-white/15 text-sky-200 px-3 py-1 rounded-full text-xs font-black mb-2">
                 Security First
               </span>
@@ -26,16 +26,6 @@ function SecurityBanner({ linkUrl, imageUrl }) {
                 تسوق الآن ←
               </span>
             </div>
-
-            {imageUrl && (
-              <div className="hidden sm:block w-32 md:w-48 h-28 md:h-36 flex-shrink-0">
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="w-full h-full object-contain group-hover:scale-105 transition"
-                />
-              </div>
-            )}
           </div>
         </Link>
       </div>
