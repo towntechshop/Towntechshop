@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -6,6 +6,7 @@ const PRODUCTS_PER_PAGE = 10
 
 export default function AdminProducts() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const isInitialLoad = useRef(true)
 
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -217,8 +218,13 @@ export default function AdminProducts() {
   }, [])
 
   useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false
+      return
+    }
+
     setSearchParams({ page: '1' })
-  }, [selectedCategory, visibilityFilter, featuredFilter, stockFilter])
+  }, [selectedCategory, visibilityFilter, featuredFilter, stockFilter, setSearchParams])
 
   useEffect(() => {
     getProducts()
