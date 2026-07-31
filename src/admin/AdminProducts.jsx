@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const PRODUCTS_PER_PAGE = 10
 
 export default function AdminProducts() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
 
@@ -16,7 +18,7 @@ export default function AdminProducts() {
   const [stockFilter, setStockFilter] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
 
-  const [currentPage, setCurrentPage] = useState(1)
+  const currentPage = Number(searchParams.get('page')) || 1
   const [totalProducts, setTotalProducts] = useState(0)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -99,7 +101,7 @@ export default function AdminProducts() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    setCurrentPage(1)
+    setSearchParams({ page: '1' })
     setSearchTerm(searchInput)
   }
 
@@ -110,7 +112,7 @@ export default function AdminProducts() {
     setVisibilityFilter('all')
     setFeaturedFilter('all')
     setStockFilter('all')
-    setCurrentPage(1)
+    setSearchParams({ page: '1' })
   }
 
   const toggleVisibility = async (product) => {
@@ -215,7 +217,7 @@ export default function AdminProducts() {
   }, [])
 
   useEffect(() => {
-    setCurrentPage(1)
+    setSearchParams({ page: '1' })
   }, [selectedCategory, visibilityFilter, featuredFilter, stockFilter])
 
   useEffect(() => {
@@ -697,7 +699,7 @@ export default function AdminProducts() {
 
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <Link
-                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}
+                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}                        state={{ returnPage: currentPage }}                        state={{ returnPage: currentPage }}
                         className="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl font-black text-center hover:bg-blue-100 transition"
                       >
                         تعديل
@@ -727,7 +729,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    setSearchParams({ page: String(Math.max(currentPage - 1, 1)) })
                   }
                   disabled={currentPage === 1}
                   className="px-5 py-3 rounded-2xl bg-slate-100 text-slate-950 font-black hover:bg-slate-200 disabled:opacity-50 transition"
@@ -738,7 +740,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    setSearchParams({ page: String(Math.min(currentPage + 1, totalPages)) })
                   }
                   disabled={currentPage === totalPages}
                   className="px-5 py-3 rounded-2xl bg-slate-950 text-white font-black hover:bg-slate-800 disabled:opacity-50 transition"

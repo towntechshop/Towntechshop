@@ -10,7 +10,9 @@ export default function EditProduct() {
   const navigate = useNavigate()
 
   const pageQuery = new URLSearchParams(location.search).get('page')
-  const returnPage = pageQuery ? Number(pageQuery) : 1
+  const pageFromQuery = pageQuery ? Number(pageQuery) : 1
+  const pageFromState = location.state?.returnPage ? Number(location.state.returnPage) : 1
+  const returnPage = Number.isFinite(pageFromQuery) && pageFromQuery >= 1 ? pageFromQuery : pageFromState
 
   const [allCategories, setAllCategories] = useState([])
   const [parentCategoryId, setParentCategoryId] = useState('')
