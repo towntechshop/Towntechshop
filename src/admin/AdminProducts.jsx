@@ -24,6 +24,12 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
+  const updatePageQuery = (page) => {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('page', String(page))
+    setSearchParams(nextParams)
+  }
+
   const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE) || 1
 
   const getCategories = async () => {
@@ -735,7 +741,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    setSearchParams({ page: String(Math.max(currentPage - 1, 1)) })
+                    updatePageQuery(Math.max(currentPage - 1, 1))
                   }
                   disabled={currentPage === 1}
                   className="px-5 py-3 rounded-2xl bg-slate-100 text-slate-950 font-black hover:bg-slate-200 disabled:opacity-50 transition"
@@ -746,7 +752,7 @@ export default function AdminProducts() {
                 <button
                   type="button"
                   onClick={() =>
-                    setSearchParams({ page: String(Math.min(currentPage + 1, totalPages)) })
+                    updatePageQuery(Math.min(currentPage + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
                   className="px-5 py-3 rounded-2xl bg-slate-950 text-white font-black hover:bg-slate-800 disabled:opacity-50 transition"
