@@ -25,7 +25,7 @@ export default function AdminProducts() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const updatePageQuery = (page) => {
-    const nextParams = new URLSearchParams(searchParams)
+    const nextParams = new URLSearchParams(searchParams.toString())
     nextParams.set('page', String(page))
     setSearchParams(nextParams)
   }
@@ -108,7 +108,9 @@ export default function AdminProducts() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    setSearchParams({ page: '1' })
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.set('page', '1')
+    setSearchParams(nextParams)
     setSearchTerm(searchInput)
   }
 
@@ -119,7 +121,9 @@ export default function AdminProducts() {
     setVisibilityFilter('all')
     setFeaturedFilter('all')
     setStockFilter('all')
-    setSearchParams({ page: '1' })
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.set('page', '1')
+    setSearchParams(nextParams)
   }
 
   const toggleVisibility = async (product) => {
@@ -711,7 +715,8 @@ export default function AdminProducts() {
 
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <Link
-                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}                        state={{ returnPage: currentPage }}                        state={{ returnPage: currentPage }}
+                        to={`/admin/products/edit/${product.id}?page=${currentPage}`}
+                        state={{ returnPage: currentPage }}
                         className="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl font-black text-center hover:bg-blue-100 transition"
                       >
                         تعديل
