@@ -506,17 +506,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 py-6 md:py-8">
-        <div className="max-w-[980px] mx-auto text-center">
-          <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
-          {STORE_SEO_DESCRIPTION_LINES.map((line) => (
-            <p
-              key={line}
-              className="text-slate-600 font-bold text-sm md:text-base leading-8"
-            >
-              {line}
-            </p>
-          ))}
+      <section className="px-4 py-6 md:py-10">
+        <div className="max-w-[980px] mx-auto">
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-6 md:p-10 text-center">
+            <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
+            <div className="space-y-4">
+              {STORE_SEO_DESCRIPTION_LINES.map((line) => (
+                <p
+                  key={line}
+                  className="text-slate-700 font-semibold text-sm md:text-base leading-7"
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
