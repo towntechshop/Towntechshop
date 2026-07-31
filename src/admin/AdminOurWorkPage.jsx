@@ -256,13 +256,19 @@ export default function AdminOurWorkPage() {
         images: prepared.images.filter((item) => item.imageUrl?.trim()),
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('site_settings')
         .update({ our_work_page: cleaned })
         .eq('id', 1)
 
       if (error) {
         throw error
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          'لم يتم حفظ صفحة أعمالنا. تأكد من وجود صف id=1 في جدول site_settings.'
+        )
       }
 
       cleaned.images.forEach((item) => {

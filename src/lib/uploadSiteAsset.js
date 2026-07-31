@@ -1,16 +1,21 @@
 import { supabase } from './supabase'
+import {
+  buildStorageFilePath,
+  getStorageUploadErrorMessage,
+} from './storage'
 
 export async function uploadSiteAsset(file, folderName) {
+  if (!supabase) {
+    throw new Error(
+      'خدمة Supabase غير مفعلة. تحقق من متغيرات البيئة VITE_SUPABASE_URL و VITE_SUPABASE_PUBLISHABLE_KEY.'
+    )
+  }
+
   if (!file) {
     throw new Error('لم يتم اختيار صورة')
   }
 
-  const fileExt = file.name.split('.').pop() || 'bin'
-  const safeExt = fileExt.toLowerCase()
-  const fileName = `${folderName}-${Date.now()}-${Math.random()
-    .toString(36)
-    .substring(2)}.${safeExt}`
-  const filePath = `${folderName}/${fileName}`
+  const filePath = buildStorageFilePath(folderName, file)
 
   const { error: uploadError } = await supabase.storage
     .from('site-assets')
@@ -20,13 +25,18 @@ export async function uploadSiteAsset(file, folderName) {
     })
 
   if (uploadError) {
-    const message = uploadError.message || 'فشل رفع الصورة إلى Supabase'
-    throw new Error(`فشل رفع الصورة: ${message}`)
+    throw new Error(getStorageUploadErrorMessage(uploadError, 'site-assets'))
   }
 
   const { data: publicUrlData } = supabase.storage
     .from('site-assets')
     .getPublicUrl(filePath)
+
+  if (!publicUrlData?.publicUrl) {
+    throw new Error(
+      'تعذر إنشاء رابط عام للصورة. تأكد أن bucket site-assets يسمح بالقراءة العامة.'
+    )
+  }
 
   return publicUrlData.publicUrl
 }
