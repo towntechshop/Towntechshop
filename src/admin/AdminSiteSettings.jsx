@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getCategoryPath } from '../lib/categoryUrls'
 import { DEFAULT_NAVBAR_MENU_ITEMS } from '../lib/defaultNavbarMenuItems'
-import { writeSiteSettingsCache } from '../lib/siteSettingsCache'
+import { writeSiteSettingsCache, clearSiteSettingsCache } from '../lib/siteSettingsCache'
 import { Field, SectionTitle } from './components/AdminFormFields'
 
 export default function AdminSiteSettings() {
@@ -386,6 +386,7 @@ export default function AdminSiteSettings() {
           ...payload,
         }
 
+        clearSiteSettingsCache()
         writeSiteSettingsCache(nextSettings)
         return nextSettings
       })

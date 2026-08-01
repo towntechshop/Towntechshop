@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import useSiteSettings from '../hooks/useSiteSettings'
+import { isPaymobConfigured } from '../lib/paymob'
 import {
   clearCart,
   clearCheckoutOrderNotes,
@@ -16,7 +17,7 @@ import { parsePlacedOrderResult } from '../lib/orderTracking'
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { settings: siteSettings } = useSiteSettings()
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings()
 
   const [items, setItems] = useState([])
 
@@ -110,10 +111,8 @@ export default function Checkout() {
     return labels[method] || 'الدفع عند الاستلام'
   }
 
-  const isPaymobReady =
-    siteSettings.paymob_enabled &&
-    siteSettings.paymob_integration_id &&
-    siteSettings.paymob_public_key
+  const isPaymobReady = isPaymobConfigured(siteSettings)
+  const paymobOptionDisabled = settingsLoading || !isPaymobReady
 
   const onSitePaymentMethods = ['paymob', 'vodafone_cash', 'instapay']
 
@@ -384,10 +383,12 @@ export default function Checkout() {
                     {
                       id: 'paymob',
                       label: 'بطاقة فيزا/ماستر عبر Paymob',
-                      disabled: !isPaymobReady,
-                      hint: !isPaymobReady
-                        ? 'يتطلب تفعيل Paymob وإضافة Integration ID و Public Key.'
-                        : undefined,
+                      disabled: paymobOptionDisabled,
+                      hint: settingsLoading
+                        ? 'جاري تحميل إعدادات الدفع...'
+                        : !isPaymobReady
+                          ? 'يتطلب تفعيل Paymob وإضافة Integration ID و Public Key.'
+                          : undefined,
                     },
                     {
                       id: 'vodafone_cash',

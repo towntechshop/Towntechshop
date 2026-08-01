@@ -9,7 +9,7 @@ import {
   readPendingPaymentOrder,
 } from '../lib/cart'
 import { toWhatsAppHref } from '../lib/siteContent'
-import { readFunctionErrorMessage } from '../lib/paymob'
+import { getPaymobSetupMessage, isPaymobConfigured, readFunctionErrorMessage } from '../lib/paymob'
 
 const MANUAL_PAYMENT_METHODS = ['vodafone_cash', 'instapay']
 
@@ -95,13 +95,10 @@ export default function Payment() {
         return
       }
 
-      if (
-        !siteSettings.paymob_enabled ||
-        !siteSettings.paymob_integration_id ||
-        !siteSettings.paymob_public_key
-      ) {
+      if (!isPaymobConfigured(siteSettings)) {
         setErrorMessage(
-          'لم يتم إعداد Paymob بالكامل بعد. فعّل Paymob وأضف Integration ID و Public Key من لوحة التحكم.'
+          getPaymobSetupMessage(siteSettings) ||
+            'لم يتم إعداد Paymob بالكامل بعد. فعّل Paymob وأضف Integration ID و Public Key من لوحة التحكم.'
         )
         setLoading(false)
         return

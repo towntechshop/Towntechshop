@@ -24,6 +24,11 @@ const CACHE_FIELDS = [
   'whatsapp',
   'email',
   'address',
+  'paymob_enabled',
+  'paymob_integration_id',
+  'paymob_public_key',
+  'enable_vodafone_cash',
+  'enable_instapay',
 ]
 
 export function pickCacheableSettings(data) {

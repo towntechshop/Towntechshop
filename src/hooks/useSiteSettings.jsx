@@ -63,6 +63,9 @@ function mergeSettings(data) {
   return {
     ...defaultSettings,
     ...data,
+    paymob_enabled: Boolean(data.paymob_enabled),
+    paymob_integration_id: String(data.paymob_integration_id || '').trim(),
+    paymob_public_key: String(data.paymob_public_key || '').trim(),
     navbar_menu_items: Array.isArray(data.navbar_menu_items)
       ? data.navbar_menu_items
       : defaultSettings.navbar_menu_items,
@@ -120,7 +123,7 @@ export function SiteSettingsProvider({ children }) {
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
-          .limit(1)
+          .eq('id', 1)
           .maybeSingle()
 
         if (!cancelled && !error && data) {
@@ -154,7 +157,7 @@ export function SiteSettingsProvider({ children }) {
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
-          .limit(1)
+          .eq('id', 1)
           .maybeSingle()
 
         if (!error && data) {
