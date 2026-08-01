@@ -30,7 +30,7 @@ function normalizePhoneForWhatsApp(phone) {
 export default function Payment() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { settings: siteSettings } = useSiteSettings()
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings()
 
   const orderId = searchParams.get('order')
   const method = searchParams.get('method')
@@ -62,6 +62,10 @@ export default function Payment() {
 
   useEffect(() => {
     const createPaymentSession = async () => {
+      if (settingsLoading) {
+        return
+      }
+
       if (!orderId || !method) {
         setErrorMessage('المعلومات المطلوبة للدفع غير كاملة.')
         setLoading(false)
@@ -104,6 +108,8 @@ export default function Payment() {
       }
 
       try {
+        setErrorMessage('')
+
         const { data, error } = await supabase.functions.invoke('paymob-session', {
           body: {
             order_id: orderId,
@@ -139,7 +145,7 @@ export default function Payment() {
     }
 
     createPaymentSession()
-  }, [orderId, method, siteSettings, isManualPayment])
+  }, [orderId, method, siteSettings, isManualPayment, settingsLoading])
 
   useEffect(() => {
     if (!paymentUrl || method !== 'paymob' || loading || errorMessage) {
@@ -204,11 +210,32 @@ export default function Payment() {
       <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 p-8 text-right">
         <h1 className="text-3xl font-black text-slate-950 mb-4">الدفع عبر {methodLabel}</h1>
 
-        {loading ? (
-          <div className="text-slate-500 font-bold">جاري تحميل تفاصيل الدفع...</div>
+        {loading || settingsLoading ? (
+          <div className="text-slate-500 font-bold">جاري تحضير بوابة الدفع...</div>
         ) : errorMessage ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 font-bold">
-            {errorMessage}
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 font-bold">
+              {errorMessage}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setErrorMessage('')
+                setLoading(true)
+                window.location.reload()
+              }}
+              className="inline-block bg-slate-950 text-white px-6 py-3 rounded-2xl font-black hover:bg-slate-800 transition"
+            >
+              إعادة المحاولة
+            </button>
+
+            <Link
+              to="/checkout"
+              className="inline-block mr-3 text-blue-600 font-black hover:underline"
+            >
+              العودة لإتمام الطلب
+            </Link>
           </div>
         ) : isManualPayment ? (
           <div className="space-y-5">

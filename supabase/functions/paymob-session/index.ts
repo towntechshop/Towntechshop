@@ -181,23 +181,29 @@ Deno.serve(async (req) => {
     const { first_name, last_name } = splitName(orderRecord.customer_name || '')
     const phone = normalizePhone(orderRecord.customer_phone || '')
 
-    const items = (orderRecord.order_items || []).map((item) => ({
-      name: item.product_title || 'Product',
+    let items = (orderRecord.order_items || []).map((item) => ({
+      name: (item.product_title || 'Product').slice(0, 50),
       amount: Math.round(
-        Number(item.line_total || Number(item.unit_price || 0) * Number(item.quantity || 1)) *
-          100
+        Number(
+          item.line_total ||
+            Number(item.unit_price || 0) * Number(item.quantity || 1)
+        ) * 100
       ),
-      description: item.product_title || 'Order item',
+      description: (item.product_title || 'Order item').slice(0, 100),
       quantity: Number(item.quantity || 1),
     }))
 
-    if (items.length === 0) {
-      items.push({
-        name: `Order ${orderRecord.order_number || orderRecord.id}`,
-        amount: amountCents,
-        description: 'Order total',
-        quantity: 1,
-      })
+    const itemsTotal = items.reduce((sum, item) => sum + item.amount, 0)
+
+    if (items.length === 0 || itemsTotal !== amountCents) {
+      items = [
+        {
+          name: `Order ${orderRecord.order_number || orderRecord.id}`.slice(0, 50),
+          amount: amountCents,
+          description: 'Order total',
+          quantity: 1,
+        },
+      ]
     }
 
     const siteUrl =
