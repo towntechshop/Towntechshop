@@ -9,6 +9,7 @@ import {
   readPendingPaymentOrder,
 } from '../lib/cart'
 import { toWhatsAppHref } from '../lib/siteContent'
+import { readFunctionErrorMessage } from '../lib/paymob'
 
 const MANUAL_PAYMENT_METHODS = ['vodafone_cash', 'instapay']
 
@@ -107,11 +108,12 @@ export default function Payment() {
           body: {
             order_id: orderId,
             payment_method: method,
+            public_key: siteSettings.paymob_public_key,
           },
         })
 
         if (error) {
-          throw error
+          throw new Error(await readFunctionErrorMessage(error, data))
         }
 
         let parsed = null
@@ -125,7 +127,7 @@ export default function Payment() {
         }
 
         if (!parsed?.payment_url) {
-          throw new Error('لم يتم الحصول على رابط الدفع.')
+          throw new Error(parsed?.error || 'لم يتم الحصول على رابط الدفع.')
         }
 
         setPaymentUrl(parsed.payment_url)

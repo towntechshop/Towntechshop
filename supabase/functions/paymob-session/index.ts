@@ -61,35 +61,55 @@ function splitName(fullName: string) {
   }
 }
 
-async function loadPaymobConfig(supabase: ReturnType<typeof createClient>) {
-  const secretKey = Deno.env.get('PAYMOB_SECRET_KEY') || ''
-  const publicKey = Deno.env.get('PAYMOB_PUBLIC_KEY') || ''
-  const integrationId = Deno.env.get('PAYMOB_INTEGRATION_ID') || ''
+async function loadPaymobConfig(
+  supabase: ReturnType<typeof createClient>,
+  requestPublicKey?: string
+) {
+  let secretKey = Deno.env.get('PAYMOB_SECRET_KEY') || ''
+  let publicKey = Deno.env.get('PAYMOB_PUBLIC_KEY') || requestPublicKey || ''
+  let integrationId = Deno.env.get('PAYMOB_INTEGRATION_ID') || ''
 
-  if (secretKey && publicKey && integrationId) {
-    return { secretKey, publicKey, integrationId }
-  }
-
-  const { data: settings } = await supabase
+  const { data: settings, error: settingsError } = await supabase
     .from('site_settings')
-    .select(
-      'paymob_enabled, paymob_api_key, paymob_public_key, paymob_integration_id'
-    )
-    .limit(1)
+    .select('paymob_enabled, paymob_api_key, paymob_integration_id')
+    .eq('id', 1)
     .maybeSingle()
+
+  if (settingsError) {
+    console.error('site_settings query failed:', settingsError)
+  }
 
   const siteSettings = (settings || {}) as SiteSettings
 
-  if (!siteSettings.paymob_enabled) {
+  secretKey = secretKey || siteSettings.paymob_api_key || ''
+  integrationId =
+    integrationId || String(siteSettings.paymob_integration_id || '')
+
+  if (!publicKey) {
+    const { data: publicKeyRow, error: publicKeyError } = await supabase
+      .from('site_settings')
+      .select('paymob_public_key')
+      .eq('id', 1)
+      .maybeSingle()
+
+    if (publicKeyError) {
+      console.error('paymob_public_key query failed:', publicKeyError)
+    } else {
+      publicKey = publicKeyRow?.paymob_public_key || ''
+    }
+  }
+
+  const paymobConfiguredInEnv = Boolean(
+    Deno.env.get('PAYMOB_SECRET_KEY') &&
+      (Deno.env.get('PAYMOB_PUBLIC_KEY') || requestPublicKey) &&
+      Deno.env.get('PAYMOB_INTEGRATION_ID')
+  )
+
+  if (!paymobConfiguredInEnv && !siteSettings.paymob_enabled) {
     throw new Error('Paymob is not enabled')
   }
 
-  return {
-    secretKey: secretKey || siteSettings.paymob_api_key || '',
-    publicKey: publicKey || siteSettings.paymob_public_key || '',
-    integrationId:
-      integrationId || String(siteSettings.paymob_integration_id || ''),
-  }
+  return { secretKey, publicKey, integrationId }
 }
 
 Deno.serve(async (req) => {
@@ -100,6 +120,7 @@ Deno.serve(async (req) => {
   try {
     const payload = await req.json()
     const orderId = payload?.order_id
+    const requestPublicKey = payload?.public_key
 
     if (!orderId) {
       return jsonResponse({ error: 'order_id is required' }, 400)
@@ -125,15 +146,28 @@ Deno.serve(async (req) => {
     }
 
     const orderRecord = order as OrderRecord
-    const { secretKey, publicKey, integrationId } =
-      await loadPaymobConfig(supabase)
+    const { secretKey, publicKey, integrationId } = await loadPaymobConfig(
+      supabase,
+      requestPublicKey
+    )
 
-    if (!secretKey || !publicKey || !integrationId) {
+    if (!secretKey) {
       return jsonResponse(
-        {
-          error:
-            'Paymob credentials are missing. Add Secret Key, Public Key, and Integration ID.',
-        },
+        { error: 'Paymob Secret Key غير موجود. أضفه في Supabase Secrets أو إعدادات الموقع.' },
+        500
+      )
+    }
+
+    if (!publicKey) {
+      return jsonResponse(
+        { error: 'Paymob Public Key غير موجود. أضفه في إعدادات الموقع.' },
+        500
+      )
+    }
+
+    if (!integrationId) {
+      return jsonResponse(
+        { error: 'Paymob Integration ID غير موجود.' },
         500
       )
     }
