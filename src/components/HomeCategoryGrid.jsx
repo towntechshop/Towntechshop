@@ -24,7 +24,7 @@ export default function HomeCategoryGrid({ title, tiles }) {
                     <img
                       src={tile.image}
                       alt=""
-                      loading="lazy"
+                      loading="eager"
                       onError={(event) => {
                         event.currentTarget.style.visibility = 'hidden'
                       }}
