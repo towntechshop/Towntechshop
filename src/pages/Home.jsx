@@ -10,6 +10,7 @@ import HomeDesignBlock from '../components/HomeDesignBlock'
 import HomeCategoryGrid from '../components/HomeCategoryGrid'
 import HomeWhyUs from '../components/HomeWhyUs'
 import HomeBenefits from '../components/HomeBenefits'
+import HomeTicker from '../components/HomeTicker'
 import Reveal from '../components/Reveal'
 import HomePromoBanners from '../components/HomePromoBanners'
 import { addToCart } from '../lib/cart'
@@ -508,6 +509,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomeTicker />
 
       <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
 

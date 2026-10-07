@@ -255,6 +255,20 @@ export default function SiteFeaturesSection({ value, onChange }) {
             description="بيعرض نفس (مميزات المتجر) اللي تحت في الصفحة دي."
           />
           <Toggle
+            checked={features.home_ticker_enabled}
+            onChange={(checked) => update('home_ticker_enabled', checked)}
+            title="الشريط المتحرك تحت البانر"
+            description="جمل قصيرة بتتحرك من الشمال لليمين تحت البانر الرئيسي."
+          />
+          <Field label="جمل الشريط المتحرك (جملة في كل سطر)">
+            <textarea
+              rows={4}
+              value={features.home_ticker_text}
+              onChange={(event) => update('home_ticker_text', event.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Toggle
             checked={features.home_category_grid_enabled}
             onChange={(checked) => update('home_category_grid_enabled', checked)}
             title="شبكة الأقسام (تسوق حسب القسم)"

@@ -447,3 +447,42 @@ body {
     background-position: -100% 0;
   }
 }
+
+/* ===== الشريط المتحرك تحت البانر (من الشمال لليمين) ===== */
+.home-ticker::before,
+.home-ticker::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.home-ticker::before {
+  left: 0;
+  background: linear-gradient(90deg, #0b1f3a, transparent);
+}
+
+.home-ticker::after {
+  right: 0;
+  background: linear-gradient(-90deg, #0b1f3a, transparent);
+}
+
+.home-ticker-track {
+  animation: home-ticker var(--ticker-duration, 40s) linear infinite;
+}
+
+.home-ticker:hover .home-ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes home-ticker {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

@@ -14,6 +14,16 @@ export const DEFAULT_SITE_FEATURES = {
 
   // الصفحة الرئيسية
   home_trust_strip_enabled: true,
+  home_ticker_enabled: true,
+  home_ticker_text: [
+    'توصيل لكل محافظات مصر',
+    'ضمان حقيقي على كل المنتجات',
+    'الدفع عند الاستلام أو أونلاين بأمان',
+    'معاينة وتركيب على إيد فنيين متخصصين',
+    'منتجات أصلية من موردين معتمدين',
+    'دعم فني قبل وبعد البيع',
+    'استرجاع خلال 3 أيام واستبدال خلال 14 يوم',
+  ].join('\n'), // جملة في كل سطر
   home_category_grid_enabled: true,
   home_category_grid_title: 'تسوق حسب القسم',
   home_intro_enabled: true,
