@@ -139,20 +139,20 @@ export default function HomeWhyUs() {
           )}
 
           {showBadges && badges.length > 0 && (
-            <ul className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 md:gap-4">
+            <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
               {badges.map((badge, index) => (
                 <li
                   key={index}
                   style={{ transitionDelay: visible ? `${150 + index * 110}ms` : '0ms' }}
-                  className={`why-us-card group relative rounded-2xl bg-white/[0.05] border border-white/10 p-4 md:p-5 transition duration-500 hover:bg-white/[0.09] hover:border-white/20 hover:-translate-y-1 ${
+                  className={`why-us-card group relative rounded-2xl bg-white/[0.05] border border-white/10 p-3.5 sm:p-4 md:p-5 transition duration-500 hover:bg-white/[0.09] hover:border-white/20 hover:-translate-y-1 ${
                     visible ? 'is-visible' : ''
                   }`}
                 >
-                  <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#1D4ED8] text-white shadow-[0_10px_24px_-10px_rgba(29,78,216,0.9)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                  <span className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#1D4ED8] text-white shadow-[0_10px_24px_-10px_rgba(29,78,216,0.9)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
                     <BadgeIcon name={badge.icon} />
                   </span>
-                  <h3 className="mt-3.5 font-bold text-base md:text-lg leading-7">{badge.title}</h3>
-                  {badge.text && <p className="mt-1 text-white/65 text-sm leading-6">{badge.text}</p>}
+                  <h3 className="mt-3 font-bold text-[15px] sm:text-base md:text-lg leading-6 sm:leading-7">{badge.title}</h3>
+                  {badge.text && <p className="mt-1 text-white/65 text-xs sm:text-sm leading-5 sm:leading-6">{badge.text}</p>}
                 </li>
               ))}
             </ul>
