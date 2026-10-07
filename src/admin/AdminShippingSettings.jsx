@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import ShippingZonesEditor from './components/ShippingZonesEditor'
 
 export default function AdminShippingSettings() {
   const [settingsId, setSettingsId] = useState(null)
@@ -304,6 +305,8 @@ export default function AdminShippingSettings() {
           </div>
         </aside>
       </div>
+
+      <ShippingZonesEditor />
     </div>
   )
 }

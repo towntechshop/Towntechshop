@@ -294,6 +294,7 @@ export default function AdminOrders() {
 الاسم: ${order.customer_name}
 الهاتف: ${order.customer_phone}
 البريد الإلكتروني: ${order.customer_email || '-'}
+المحافظة: ${order.customer_governorate || '-'}
 المدينة / المنطقة: ${order.customer_city || '-'}
 العنوان: ${order.customer_address}
 الملاحظات: ${order.customer_notes || '-'}
@@ -470,6 +471,7 @@ ${itemsText}
             <p><strong>الاسم:</strong> ${escapeHtml(order.customer_name)}</p>
             <p><strong>الهاتف:</strong> ${escapeHtml(order.customer_phone)}</p>
             <p><strong>البريد الإلكتروني:</strong> ${escapeHtml(order.customer_email || '-')}</p>
+            <p><strong>المحافظة:</strong> ${escapeHtml(order.customer_governorate || '-')}</p>
             <p><strong>المدينة / المنطقة:</strong> ${escapeHtml(order.customer_city || '-')}</p>
             <p><strong>العنوان:</strong> ${escapeHtml(order.customer_address)}</p>
             <p><strong>ملاحظات:</strong> ${escapeHtml(order.customer_notes || '-')}</p>
@@ -574,7 +576,7 @@ ${itemsText}
             </p>
 
             <p>
-              <strong>المدينة:</strong> {order.customer_city || '-'}
+              <strong>المدينة:</strong> {[order.customer_governorate, order.customer_city].filter(Boolean).join(' - ') || '-'}
             </p>
 
             <p className="leading-7">

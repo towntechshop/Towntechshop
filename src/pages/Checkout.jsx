@@ -36,6 +36,8 @@ export default function Checkout() {
   const [customerEmail, setCustomerEmail] = useState('')
   const [customerAddress, setCustomerAddress] = useState('')
   const [customerCity, setCustomerCity] = useState('')
+  const [customerGovernorate, setCustomerGovernorate] = useState('')
+  const [shippingZones, setShippingZones] = useState([])
   const [customerNotes, setCustomerNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery')
 
@@ -62,6 +64,15 @@ export default function Checkout() {
   }
 
   useEffect(() => {
+    supabase
+      .from('shipping_zones')
+      .select('governorate, fee')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .then(({ data }) => setShippingZones(data || []))
+  }, [])
+
+  useEffect(() => {
     const cartItems = getCartItems()
     setItems(cartItems)
 
@@ -84,7 +95,16 @@ export default function Checkout() {
     freeShippingMinAmount > 0 &&
     subtotal >= freeShippingMinAmount
 
-  const finalShippingFee = freeShippingApplied ? 0 : shippingFee
+  const hasShippingZones = shippingZones.length > 0
+  const selectedZone = shippingZones.find((zone) => zone.governorate === customerGovernorate)
+  const zoneFee = selectedZone ? Number(selectedZone.fee || 0) : null
+
+  const finalShippingFee = freeShippingApplied
+    ? 0
+    : hasShippingZones
+      ? zoneFee ?? 0
+      : shippingFee
+  const shippingPending = hasShippingZones && !freeShippingApplied && !selectedZone
 
   const couponDiscount = Number(appliedCoupon?.discount_amount || 0)
 
@@ -200,6 +220,10 @@ export default function Checkout() {
         throw new Error('من فضلك اكتب العنوان بالتفصيل.')
       }
 
+      if (hasShippingZones && !customerGovernorate) {
+        throw new Error('من فضلك اختار المحافظة.')
+      }
+
       const cleanItems = cartItems.map((item) => ({
         id: item.id,
         quantity: Number(item.quantity || 1),
@@ -215,6 +239,7 @@ export default function Checkout() {
         p_items: cleanItems,
         p_coupon_code: appliedCoupon?.code || null,
         p_payment_method: paymentMethod,
+        p_governorate: customerGovernorate || null,
       })
 
       if (error) {
@@ -401,9 +426,32 @@ export default function Checkout() {
                     />
                   </div>
 
+                  {hasShippingZones && (
+                    <div>
+                      <label htmlFor="checkout-governorate" className="block mb-1.5 text-sm font-bold text-slate-700">
+                        المحافظة <span className="text-[#D7262E]">*</span>
+                      </label>
+                      <select
+                        id="checkout-governorate"
+                        value={customerGovernorate}
+                        onChange={(e) => setCustomerGovernorate(e.target.value)}
+                        className={inputClass}
+                        required
+                      >
+                        <option value="">اختار المحافظة</option>
+                        {shippingZones.map((zone) => (
+                          <option key={zone.governorate} value={zone.governorate}>
+                            {zone.governorate}
+                            {freeShippingApplied ? '' : ` — شحن ${formatPrice(zone.fee)} جنيه`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div>
                     <label htmlFor="checkout-city" className="block mb-1.5 text-sm font-bold text-slate-700">
-                      المحافظة / المنطقة
+                      {hasShippingZones ? 'المدينة / المنطقة' : 'المحافظة / المنطقة'}
                     </label>
                     <input
                       id="checkout-city"
@@ -411,7 +459,7 @@ export default function Checkout() {
                       autoComplete="address-level2"
                       value={customerCity}
                       onChange={(e) => setCustomerCity(e.target.value)}
-                      placeholder="مثال: القاهرة - مدينة نصر"
+                      placeholder={hasShippingZones ? "مثال: مدينة نصر" : "مثال: القاهرة - مدينة نصر"}
                       className={inputClass}
                     />
                   </div>
@@ -604,8 +652,12 @@ export default function Checkout() {
                 )}
                 <div className="flex items-center justify-between">
                   <dt className="text-slate-500">الشحن</dt>
-                  <dd className={`font-bold ${finalShippingFee === 0 ? 'text-green-700' : 'text-slate-900'}`}>
-                    {finalShippingFee === 0 ? 'مجاني' : `${formatPrice(finalShippingFee)} جنيه`}
+                  <dd className={`font-bold ${!shippingPending && finalShippingFee === 0 ? 'text-green-700' : 'text-slate-900'}`}>
+                    {shippingPending
+                      ? 'اختار المحافظة'
+                      : finalShippingFee === 0
+                        ? 'مجاني'
+                        : `${formatPrice(finalShippingFee)} جنيه`}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">

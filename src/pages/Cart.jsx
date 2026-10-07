@@ -55,6 +55,16 @@ export default function Cart() {
     }
   }
 
+  const [hasShippingZones, setHasShippingZones] = useState(false)
+
+  useEffect(() => {
+    supabase
+      .from('shipping_zones')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .then(({ count }) => setHasShippingZones((count || 0) > 0))
+  }, [])
+
   const loadRecommendedProducts = async () => {
     const currentCart = getCartItems()
     const currentCartIds = currentCart.map((item) => item.id)
@@ -108,7 +118,8 @@ export default function Cart() {
     }, 0)
   }, [cartItems])
 
-  const shouldShowShippingInfo = shippingFee > 0
+  // لو فيه أسعار شحن للمحافظات، الشحن بيتحسب في صفحة إتمام الطلب بعد اختيار المحافظة
+  const shouldShowShippingInfo = shippingFee > 0 && !hasShippingZones
   const shouldShowFreeShippingMessage =
     shippingFee > 0 && enableFreeShipping && freeShippingMinAmount > 0
 
@@ -120,7 +131,7 @@ export default function Cart() {
       ? freeShippingMinAmount - subtotal
       : 0
 
-  const finalShippingFee = freeShippingApplied ? 0 : shippingFee
+  const finalShippingFee = freeShippingApplied || hasShippingZones ? 0 : shippingFee
   const total = subtotal + finalShippingFee
 
   const handleIncrease = (item) => {
@@ -286,7 +297,7 @@ export default function Cart() {
                     </span>
                   ) : (
                     <span className="text-slate-900 font-black">
-                      يتم تحديده لاحقا
+                      {hasShippingZones ? (freeShippingApplied ? 'مجاني' : 'حسب المحافظة') : 'يتم تحديده لاحقا'}
                     </span>
                   )}
                 </div>
