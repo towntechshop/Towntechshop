@@ -227,3 +227,53 @@ body {
 .category-pop-in {
   animation: category-pop-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ===== قسم (ليه Town Tech) ===== */
+.why-us-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.9) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.9) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 30% 40%, #000 20%, transparent 75%);
+}
+
+@keyframes why-us-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-30px, 24px) scale(1.12);
+  }
+}
+
+.why-us-glow {
+  animation: why-us-float 12s ease-in-out infinite;
+}
+
+.why-us-glow--slow {
+  animation-duration: 16s;
+  animation-direction: reverse;
+}
+
+.why-us-fade,
+.why-us-card {
+  opacity: 0;
+  transform: translateY(18px);
+  transition-property: opacity, transform, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.why-us-fade {
+  transition-duration: 0.7s;
+}
+
+.why-us-fade.is-visible,
+.why-us-card.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.why-us-card.is-visible:hover {
+  transform: translateY(-4px);
+}

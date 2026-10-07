@@ -17,6 +17,13 @@ export const DEFAULT_SITE_FEATURES = {
   home_category_grid_enabled: true,
   home_category_grid_title: 'تسوق حسب القسم',
   home_intro_enabled: true,
+  home_about_title: 'أحدث تكنولوجيا المراقبة بضمان حقيقي ودعم فني متميز',
+  home_about_text: 'شركة رائدة في أنظمة المراقبة الأمنية المتكاملة، بنقدّم حلول للبيوت والمحلات والشركات بأطول فترة ضمان وأسعار منافسة.',
+  home_stats: [
+    { value: 5000, prefix: '+', suffix: '', label: 'عميل وثق فينا' },
+    { value: 200, prefix: '+', suffix: '', label: 'مؤسسة وشركة' },
+    { value: 2022, prefix: '', suffix: '', label: 'سنة البداية' },
+  ],
   home_banners_enabled: true,
   home_banners: [], // [{ image_url, link, alt }] لحد 3 بانرات
 
@@ -62,6 +69,10 @@ export function getSiteFeatures(settings) {
 
   if (!merged.payment_logos || typeof merged.payment_logos !== 'object') {
     merged.payment_logos = {}
+  }
+
+  if (!Array.isArray(merged.home_stats)) {
+    merged.home_stats = DEFAULT_SITE_FEATURES.home_stats
   }
 
   if (!Array.isArray(merged.home_banners)) {

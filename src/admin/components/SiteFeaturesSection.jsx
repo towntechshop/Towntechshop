@@ -271,6 +271,57 @@ export default function SiteFeaturesSection({ value, onChange }) {
             title="بانرات العروض تحت أول قسم منتجات"
             description="لحد 3 بانرات جنب بعض، كل واحد بلينك."
           />
+          <Field label="عنوان قسم (ليه Town Tech)">
+            <input
+              type="text"
+              value={features.home_about_title}
+              onChange={(event) => update('home_about_title', event.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="وصف قسم (ليه Town Tech)">
+            <textarea
+              rows={2}
+              value={features.home_about_text}
+              onChange={(event) => update('home_about_text', event.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <div className="md:col-span-2 space-y-2">
+            <p className="text-sm font-black text-slate-700">الأرقام (بتتعد بحركة لما تظهر)</p>
+            {features.home_stats.map((stat, index) => (
+              <div key={index} className="grid grid-cols-[90px_70px_1fr] gap-2">
+                <input
+                  type="number"
+                  value={stat.value}
+                  onChange={(event) =>
+                    update('home_stats', features.home_stats.map((item, i) => (i === index ? { ...item, value: Number(event.target.value) } : item)))
+                  }
+                  className={inputClass}
+                  aria-label="الرقم"
+                />
+                <input
+                  type="text"
+                  value={stat.prefix || ''}
+                  onChange={(event) =>
+                    update('home_stats', features.home_stats.map((item, i) => (i === index ? { ...item, prefix: event.target.value } : item)))
+                  }
+                  placeholder="+"
+                  className={inputClass}
+                  aria-label="علامة قبل الرقم"
+                />
+                <input
+                  type="text"
+                  value={stat.label}
+                  onChange={(event) =>
+                    update('home_stats', features.home_stats.map((item, i) => (i === index ? { ...item, label: event.target.value } : item)))
+                  }
+                  className={inputClass}
+                  aria-label="الوصف"
+                />
+              </div>
+            ))}
+          </div>
           <Field label="عنوان شبكة الأقسام">
             <input
               type="text"

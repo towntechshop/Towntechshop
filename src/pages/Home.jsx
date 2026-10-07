@@ -8,7 +8,7 @@ import HomeProductSection from '../components/HomeProductSection'
 import HomeOurWorkSection from '../components/HomeOurWorkSection'
 import HomeDesignBlock from '../components/HomeDesignBlock'
 import HomeCategoryGrid from '../components/HomeCategoryGrid'
-import { TrustBadgesStrip } from '../components/TrustBadges'
+import HomeWhyUs from '../components/HomeWhyUs'
 import Reveal from '../components/Reveal'
 import HomePromoBanners from '../components/HomePromoBanners'
 import { addToCart } from '../lib/cart'
@@ -513,22 +513,7 @@ export default function Home() {
         />
       )}
 
-      <TrustBadgesStrip />
-
-      {features.home_intro_enabled && (
-        <section className="px-4 py-5 md:py-7">
-          <div className="max-w-[760px] mx-auto text-center">
-            {STORE_SEO_DESCRIPTION_LINES.map((line) => (
-              <p
-                key={line}
-                className="text-slate-600 text-[15px] md:text-[17px] leading-8 md:leading-9"
-              >
-                {line}
-              </p>
-            ))}
-          </div>
-        </section>
-      )}
+      <HomeWhyUs />
 
       <SectionDivider />
 
