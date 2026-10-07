@@ -212,8 +212,14 @@ export default function AdminContactMessages() {
                     <tr className={adminRowHover}>
                       <td className={`${adminTd} font-black text-slate-950 text-sm`}>
                         {item.name}
+                        {item.message_type === 'installation' && (
+                          <span className="block mt-1 w-fit text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">طلب معاينة / تركيب</span>
+                        )}
                       </td>
                       <td className={`${adminTd} text-xs text-sky-700 font-bold break-all`}>
+                        {item.phone ? (
+                          <a href={`tel:${item.phone}`} dir="ltr" className="block hover:underline">{item.phone}</a>
+                        ) : null}
                         {item.email}
                       </td>
                       <td className={`${adminTd} text-sm text-slate-600 font-bold`}>
@@ -280,6 +286,12 @@ export default function AdminContactMessages() {
                     {formatDate(item.created_at)}
                   </p>
                 </div>
+                {item.message_type === 'installation' && (
+                  <span className="inline-block text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-black">طلب معاينة / تركيب</span>
+                )}
+                {item.phone && (
+                  <a href={`tel:${item.phone}`} dir="ltr" className="block text-xs text-sky-700 font-bold">{item.phone}</a>
+                )}
                 <p className="text-xs text-sky-700 font-bold break-all">{item.email}</p>
                 {item.subject && (
                   <p className="text-xs text-slate-500 font-bold mt-1">{item.subject}</p>

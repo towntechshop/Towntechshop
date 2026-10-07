@@ -5,6 +5,7 @@ import ScrollToTop from './ScrollToTop'
 import SeoHead from './SeoHead'
 import { AnnouncementBar, FloatingWhatsAppButton } from './SiteExtras'
 import BackToTop from './BackToTop'
+import CompareBar from './CompareBar'
 import AnalyticsTracker from './AnalyticsTracker'
 
 export default function WebsiteLayout() {
@@ -23,6 +24,7 @@ export default function WebsiteLayout() {
       <Footer />
       <FloatingWhatsAppButton />
       <BackToTop />
+      <CompareBar />
     </div>
   )
 }

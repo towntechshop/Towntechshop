@@ -12,6 +12,7 @@ const STATIC_PATHS = [
   '/return-policy',
   '/shipping-policy',
   '/terms',
+  '/installation-request',
 ]
 
 function escapeXml(value) {

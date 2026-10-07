@@ -36,6 +36,9 @@ const POPULAR_SEARCHES = [
 
 const INTEREST_LINKS = [
   { label: 'طلباتي', to: '/my-orders' },
+  { label: 'اطلب معاينة أو تركيب', to: '/installation-request' },
+  { label: 'المفضلة', to: '/wishlist' },
+  { label: 'مقارنة المنتجات', to: '/compare' },
   { label: 'من نحن', to: '/about' },
   { label: 'أعمالنا', to: '/our-work' },
   { label: 'تواصل معنا', to: '/contact' },

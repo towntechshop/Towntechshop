@@ -20,6 +20,9 @@ import DynamicPage from './pages/DynamicPage'
 
 import Payment from './pages/Payment'
 import NotFound from './pages/NotFound'
+import Wishlist from './pages/Wishlist'
+import Compare from './pages/Compare'
+import InstallationRequest from './pages/InstallationRequest'
 
 // لوحة التحكم بتتحمّل بس لما الأدمن يفتحها (الموقع أخف وأسرع للعملاء)
 const AdminLogin = lazy(() => import('./admin/AdminLogin'))
@@ -86,6 +89,9 @@ export default function App() {
           element={<DynamicPage slug="shipping-policy" />}
         />
         <Route path="/terms" element={<DynamicPage slug="terms" />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/compare" element={<Compare />} />
+        <Route path="/installation-request" element={<InstallationRequest />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

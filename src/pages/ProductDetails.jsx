@@ -23,6 +23,10 @@ import {
 } from '../components/SiteExtras'
 import { BadgeIcon } from '../components/TrustBadges'
 import PaymentMethodsRow from '../components/PaymentMethods'
+import ProductReviews, {
+  ProductRatingSummary,
+  useProductReviews,
+} from '../components/ProductReviews'
 
 const BRAND_COLORS = {
   primary: '#0B1F3A',
@@ -68,6 +72,8 @@ export default function ProductDetails() {
   const [addedProductId, setAddedProductId] = useState(null)
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+
+  const productReviews = useProductReviews(id)
 
   const relatedLimit = features.related_products_enabled
     ? features.related_products_count
@@ -224,6 +230,13 @@ export default function ProductDetails() {
             ? { '@type': 'Brand', name: product.brand }
             : undefined,
           category: category?.name || undefined,
+          aggregateRating: productReviews.count
+            ? {
+                '@type': 'AggregateRating',
+                ratingValue: productReviews.average.toFixed(1),
+                reviewCount: String(productReviews.count),
+              }
+            : undefined,
           offers: {
             '@type': 'Offer',
             url: productUrl,
@@ -419,6 +432,12 @@ export default function ProductDetails() {
                 {product.title}
               </h1>
 
+              {productReviews.count > 0 && (
+                <div className="mt-2">
+                  <ProductRatingSummary average={productReviews.average} count={productReviews.count} />
+                </div>
+              )}
+
               {product.sku && (
                 <p className="mt-2 text-slate-500 font-bold text-sm">
                   كود المنتج: <span className="text-slate-800 font-black" dir="ltr">{product.sku}</span>
@@ -593,6 +612,14 @@ export default function ProductDetails() {
           </div>
         </div>
       </section>
+
+      <ProductReviews
+        productId={product.id}
+        productTitle={product.title}
+        reviews={productReviews.reviews}
+        average={productReviews.average}
+        count={productReviews.count}
+      />
 
       {relatedProducts.length > 0 && (
         <section className="px-3 sm:px-4 pt-6 pb-12 md:pb-14">

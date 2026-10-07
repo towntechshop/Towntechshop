@@ -8,6 +8,24 @@ import {
   isProductInStock,
 } from '../lib/productUtils'
 import useSiteSettings from '../hooks/useSiteSettings'
+import useSavedList from '../hooks/useSavedList'
+import { COMPARE_MAX, toggleInList } from '../lib/savedLists'
+
+function HeartIcon({ filled, className = 'w-4 h-4' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2Z" />
+    </svg>
+  )
+}
+
+function CompareIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7 4v16M17 4v16M3 8l4-4 4 4M13 16l4 4 4-4" />
+    </svg>
+  )
+}
 
 const BRAND_PRIMARY = '#0B1F3A'
 
@@ -29,6 +47,18 @@ export default function ProductCard({
   className = '',
 }) {
   const { features } = useSiteSettings()
+  const wishlist = useSavedList('wishlist')
+  const compareList = useSavedList('compare')
+  const inWishlist = wishlist.some((item) => item.id === product.id)
+  const inCompare = compareList.some((item) => item.id === product.id)
+
+  const handleCompare = () => {
+    const result = toggleInList('compare', product)
+    if (result.full) {
+      window.alert(`تقدر تقارن لحد ${COMPARE_MAX} منتجات. شيل منتج من المقارنة الأول.`)
+    }
+  }
+
   const price = getProductPrice(product)
   const regularPrice = getRegularPrice(product)
   const sale = hasSale(product)
@@ -45,6 +75,31 @@ export default function ProductCard({
     <article
       className={`group h-full flex flex-col bg-white rounded-lg border border-slate-200 p-2.5 sm:p-3 text-right transition duration-300 hover:border-[#0B1F3A]/25 hover:shadow-[0_14px_30px_-18px_rgba(11,31,58,0.45)] ${className}`}
     >
+      <div className="relative">
+      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1.5">
+        <button
+          type="button"
+          onClick={() => toggleInList('wishlist', product)}
+          aria-label={inWishlist ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+          aria-pressed={inWishlist}
+          className={`w-8 h-8 rounded-full bg-white/95 border border-slate-200 shadow-sm flex items-center justify-center transition hover:scale-110 ${
+            inWishlist ? 'text-[#D7262E]' : 'text-slate-500 hover:text-[#D7262E]'
+          }`}
+        >
+          <HeartIcon filled={inWishlist} />
+        </button>
+        <button
+          type="button"
+          onClick={handleCompare}
+          aria-label={inCompare ? 'إزالة من المقارنة' : 'إضافة للمقارنة'}
+          aria-pressed={inCompare}
+          className={`w-8 h-8 rounded-full border shadow-sm flex items-center justify-center transition hover:scale-110 ${
+            inCompare ? 'bg-[#1D4ED8] border-[#1D4ED8] text-white' : 'bg-white/95 border-slate-200 text-slate-500 hover:text-[#1D4ED8]'
+          }`}
+        >
+          <CompareIcon />
+        </button>
+      </div>
       <Link
         to={`/products/${product.id}`}
         className="relative block aspect-square rounded-md bg-[#F5F7FA] overflow-hidden"
@@ -68,6 +123,7 @@ export default function ProductCard({
           </span>
         )}
       </Link>
+      </div>
 
       <Link to={`/products/${product.id}`} className="mt-2.5 block">
         <h3

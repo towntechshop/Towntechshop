@@ -7,6 +7,7 @@ import NavbarMenu, { PrimaryNavLinks } from './NavbarMenu'
 import useEnrichedNavbarMenuItems from '../hooks/useEnrichedNavbarMenuItems'
 import { NAV_COLORS } from '../lib/navbarConstants'
 import AllCategoriesMenu from './AllCategoriesMenu'
+import WishlistNavLink from './WishlistNavLink'
 
 const POPULAR_SEARCHES = [
   'كاميرات المراقبة',
@@ -320,7 +321,7 @@ export default function Navbar() {
           <div
             className="grid items-center gap-6"
             style={{
-              gridTemplateColumns: `${brandAreaWidthDesktop}px minmax(420px, 1fr) 360px`,
+              gridTemplateColumns: `${brandAreaWidthDesktop}px minmax(300px, 1fr) auto`,
             }}
           >
             <Link
@@ -434,6 +435,8 @@ export default function Navbar() {
                   <div className="font-bold">تواصل معنا</div>
                 </div>
               </Link>
+
+              <WishlistNavLink variant="desktop" />
 
               <Link
                 to="/my-orders"
@@ -570,6 +573,8 @@ export default function Navbar() {
             </Link>
 
             <div className="flex items-center gap-4">
+              <WishlistNavLink variant="mobile" />
+
               <Link
                 to="/my-orders"
                 className="relative hover:text-sky-300 transition"

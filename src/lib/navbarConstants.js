@@ -13,5 +13,6 @@ export const PRIMARY_NAV_LINKS = [
   { label: 'المنتجات', to: '/products' },
   { label: 'من نحن', to: '/about' },
   { label: 'أعمالنا', to: '/our-work' },
+  { label: 'اطلب معاينة', to: '/installation-request' },
   { label: 'تواصل معنا', to: '/contact' },
 ]

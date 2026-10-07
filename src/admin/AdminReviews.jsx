@@ -120,7 +120,9 @@ export default function AdminReviews() {
     setLoading(true)
     setErrorMessage('')
 
-    let query = supabase.from('reviews').select('*', { count: 'exact' })
+    let query = supabase
+      .from('reviews')
+      .select('*, products(id, title)', { count: 'exact' })
 
     if (statusFilter !== 'all') {
       query = query.eq('status', statusFilter)
@@ -390,6 +392,9 @@ export default function AdminReviews() {
                           <div className="font-black text-slate-950 text-sm">
                             {review.customer_name || '—'}
                           </div>
+                          <div className="text-[11px] font-black mt-0.5 text-sky-700 truncate">
+                            {review.products?.title ? `منتج: ${review.products.title}` : 'تقييم للمتجر'}
+                          </div>
                           <div className="text-[11px] text-slate-400 font-bold mt-0.5">
                             {review.customer_phone || review.customer_email || '—'}
                           </div>
@@ -457,6 +462,9 @@ export default function AdminReviews() {
                   <div className="min-w-0">
                     <p className="font-black text-slate-950 text-sm truncate">
                       {review.customer_name}
+                    </p>
+                    <p className="text-[11px] font-black text-sky-700 truncate">
+                      {review.products?.title ? `منتج: ${review.products.title}` : 'تقييم للمتجر'}
                     </p>
                     <p className="text-[11px] text-slate-400 font-bold">
                       {formatDate(review.created_at)}
