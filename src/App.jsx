@@ -42,6 +42,7 @@ const AdminContactMessages = lazy(() => import('./admin/AdminContactMessages'))
 const AdminSiteFeatures = lazy(() => import('./admin/AdminSiteFeatures'))
 const AdminNotifications = lazy(() => import('./admin/AdminNotifications'))
 const AdminSubscribers = lazy(() => import('./admin/AdminSubscribers'))
+const AdminBulkProducts = lazy(() => import('./admin/AdminBulkProducts'))
 
 function AdminFallback() {
   return (
@@ -104,6 +105,7 @@ export default function App() {
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/add" element={<AddProduct />} />
+        <Route path="products/bulk" element={<AdminBulkProducts />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
         <Route path="categories" element={<AdminCategories />} />
 

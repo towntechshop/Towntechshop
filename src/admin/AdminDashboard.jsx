@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import DailySalesChart from './components/DailySalesChart'
 
 const LOW_STOCK_LIMIT = 3
 
@@ -300,6 +301,10 @@ export default function AdminDashboard() {
         >
           تحديث البيانات
         </button>
+      </div>
+
+      <div className="mb-6">
+        <DailySalesChart days={30} />
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-3 md:gap-5 mb-6">

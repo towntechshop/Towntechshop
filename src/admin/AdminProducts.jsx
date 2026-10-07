@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import ExportButton from './components/ExportButton'
+import { downloadCsv, formatDateTime, todayStamp } from '../lib/exportCsv'
 
 const PRODUCTS_PER_PAGE = 10
 
@@ -245,12 +247,46 @@ export default function AdminProducts() {
           </p>
         </div>
 
-        <Link
-          to="/admin/products/add"
-          className="w-full md:w-auto bg-slate-950 text-white px-6 py-4 rounded-2xl font-black text-center hover:bg-slate-800 transition"
-        >
-          إضافة منتج
-        </Link>
+        <div className="flex flex-col md:flex-row gap-2">
+          <ExportButton
+            label="تصدير المنتجات Excel"
+            onExport={async () => {
+              const { data, error } = await supabase
+                .from('products')
+                .select('*, categories(name)')
+                .order('created_at', { ascending: false })
+              if (error) throw error
+              downloadCsv(
+                `products-${todayStamp()}`,
+                [
+                  { label: 'اسم المنتج', key: 'title' },
+                  { label: 'الكود', key: 'sku' },
+                  { label: 'الماركة', key: 'brand' },
+                  { label: 'القسم', value: (row) => row.categories?.name || '' },
+                  { label: 'السعر الأصلي', value: (row) => row.regular_price ?? row.price },
+                  { label: 'سعر البيع', value: (row) => row.sale_price ?? row.price },
+                  { label: 'المخزون', key: 'stock_quantity' },
+                  { label: 'متوفر', value: (row) => (row.is_in_stock ? 'نعم' : 'لا') },
+                  { label: 'ظاهر في الموقع', value: (row) => (row.is_visible ? 'نعم' : 'لا') },
+                  { label: 'رابط المنتج', value: (row) => `https://www.towntechshop.com/products/${row.id}` },
+                ],
+                data || []
+              )
+            }}
+          />
+          <Link
+            to="/admin/products/bulk"
+            className="w-full md:w-auto bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black text-center hover:bg-slate-50 transition"
+          >
+            تعديل جماعي
+          </Link>
+          <Link
+            to="/admin/products/add"
+            className="w-full md:w-auto bg-slate-950 text-white px-6 py-3 rounded-2xl font-black text-center hover:bg-slate-800 transition"
+          >
+            إضافة منتج
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">

@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import ExportButton from './components/ExportButton'
+import { downloadCsv, formatDateTime, todayStamp } from '../lib/exportCsv'
 import AdminPagination from './components/AdminPagination'
 import { adminActionBtn } from './components/adminListStyles'
 
@@ -738,13 +740,53 @@ ${itemsText}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={getOrders}
-          className="w-full md:w-auto bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition"
-        >
-          تحديث الطلبات
-        </button>
+        <div className="flex flex-col md:flex-row gap-2">
+          <ExportButton
+            label="تصدير كل الطلبات Excel"
+            onExport={async () => {
+              const { data, error } = await supabase
+                .from('orders')
+                .select('*, order_items(*)')
+                .order('created_at', { ascending: false })
+              if (error) throw error
+              downloadCsv(
+                `orders-${todayStamp()}`,
+                [
+                  { label: 'رقم الطلب', key: 'order_number' },
+                  { label: 'التاريخ', value: (row) => formatDateTime(row.created_at) },
+                  { label: 'العميل', key: 'customer_name' },
+                  { label: 'الموبايل', key: 'customer_phone' },
+                  { label: 'الإيميل', key: 'customer_email' },
+                  { label: 'المحافظة', key: 'customer_governorate' },
+                  { label: 'المدينة', key: 'customer_city' },
+                  { label: 'العنوان', key: 'customer_address' },
+                  {
+                    label: 'المنتجات',
+                    value: (row) =>
+                      (row.order_items || []).map((item) => `${item.product_title} × ${item.quantity}`).join(' | '),
+                  },
+                  { label: 'قيمة المنتجات', key: 'subtotal' },
+                  { label: 'الشحن', key: 'shipping_fee' },
+                  { label: 'الخصم', key: 'discount_amount' },
+                  { label: 'الإجمالي', key: 'total_amount' },
+                  { label: 'كوبون', key: 'coupon_code' },
+                  { label: 'طريقة الدفع', value: (row) => translatePaymentMethod(row.payment_method) },
+                  { label: 'حالة الدفع', value: (row) => translatePaymentStatus(row.payment_status) },
+                  { label: 'حالة الطلب', value: (row) => translateOrderStatus(row.status) },
+                  { label: 'ملاحظات', key: 'customer_notes' },
+                ],
+                data || []
+              )
+            }}
+          />
+          <button
+            type="button"
+            onClick={getOrders}
+            className="w-full md:w-auto bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition"
+          >
+            تحديث الطلبات
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">

@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import ExportButton from './components/ExportButton'
+import { downloadCsv, formatDateTime, todayStamp } from '../lib/exportCsv'
 
 const CUSTOMERS_PER_PAGE = 10
 
@@ -344,13 +346,32 @@ ${ordersText}`
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={getOrders}
-          className="w-full md:w-auto bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition"
-        >
-          تحديث البيانات
-        </button>
+        <div className="flex flex-col md:flex-row gap-2">
+          <ExportButton
+            label="تصدير العملاء Excel"
+            onExport={async () =>
+              downloadCsv(
+                `customers-${todayStamp()}`,
+                [
+                  { label: 'الاسم', key: 'name' },
+                  { label: 'الموبايل', key: 'phone' },
+                  { label: 'الإيميل', key: 'email' },
+                  { label: 'عدد الطلبات', key: 'totalOrders' },
+                  { label: 'إجمالي المشتريات', key: 'totalSpent' },
+                  { label: 'آخر طلب', value: (row) => formatDateTime(row.lastOrderDate) },
+                ],
+                filteredCustomers
+              )
+            }
+          />
+          <button
+            type="button"
+            onClick={getOrders}
+            className="w-full md:w-auto bg-white border border-slate-200 text-slate-950 px-5 py-3 rounded-2xl font-black hover:bg-slate-50 transition"
+          >
+            تحديث البيانات
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
