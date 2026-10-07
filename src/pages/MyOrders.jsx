@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import OrderDetailsCard from '../components/orders/OrderDetailsCard'
+import FindOrderForm from '../components/orders/FindOrderForm'
 import {
   fetchCustomerOrderDetails,
   getCustomerOrders,
@@ -73,7 +74,7 @@ export default function MyOrders() {
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-[#0B1F3A]">طلباتي</h1>
             <p className="text-slate-500 font-bold mt-2">
-              هنا تظهر طلباتك التي قمت بها من هذا المتصفح.
+              طلباتك اللي عملتها من الجهاز ده بتظهر هنا لوحدها، ولو طلبت من جهاز تاني دوّر عليه برقم الطلب.
             </p>
           </div>
 
@@ -87,6 +88,10 @@ export default function MyOrders() {
               {loading ? 'جاري التحديث...' : 'تحديث الحالة'}
             </button>
           )}
+        </div>
+
+        <div className="mb-6">
+          <FindOrderForm onFound={loadOrders} compact={hasOrders} />
         </div>
 
         {loadError && (
@@ -108,7 +113,7 @@ export default function MyOrders() {
             </div>
             <h2 className="text-2xl font-black text-[#0B1F3A]">لا توجد طلبات بعد</h2>
             <p className="text-slate-500 font-bold mt-3 leading-8 max-w-md mx-auto">
-              لما تطلب من الموقع، هتلاقي طلبك هنا تلقائياً مع تفاصيله وحالة التوصيل.
+              لما تطلب من الموقع، هتلاقي طلبك هنا تلقائياً مع تفاصيله وحالة التوصيل. ولو طلبت قبل كده، دوّر عليه من فوق برقم الطلب والموبايل.
             </p>
             <Link
               to="/products"

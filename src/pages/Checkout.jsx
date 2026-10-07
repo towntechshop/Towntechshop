@@ -254,10 +254,20 @@ export default function Checkout() {
         throw error
       }
 
-      const { id: orderId, orderNumber } = parsePlacedOrderResult(data)
+      const { id: orderId, orderNumber: returnedNumber } = parsePlacedOrderResult(data)
 
       if (!orderId) {
         throw new Error('تعذر إنشاء الطلب.')
+      }
+
+      // الطلب بيرجع بالـ id بس، فبنجيب رقم الطلب عشان يتحفظ في (طلباتي)
+      let orderNumber = returnedNumber
+      if (!orderNumber) {
+        const { data: numberData } = await supabase.rpc('get_guest_order_number', {
+          p_order_id: orderId,
+          p_phone: customerPhone.trim(),
+        })
+        orderNumber = typeof numberData === 'string' ? numberData : null
       }
 
       saveRecentPlacedOrder({
