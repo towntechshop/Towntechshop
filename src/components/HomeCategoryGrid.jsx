@@ -22,25 +22,25 @@ function FeaturedTile({ tile }) {
   return (
     <Link
       to={tile.to}
-      className="category-pop-in group relative col-span-2 sm:col-span-3 lg:col-span-2 lg:row-span-2 flex flex-col sm:flex-row lg:flex-col justify-between overflow-hidden rounded-3xl bg-[#0B1F3A] text-white p-5 sm:p-6 lg:p-8 min-h-[240px] lg:min-h-0 transition duration-300 hover:shadow-[0_28px_50px_-28px_rgba(11,31,58,0.9)]"
+      className="category-pop-in group relative col-span-2 sm:col-span-3 lg:col-span-2 lg:row-span-2 flex flex-row lg:flex-col items-center lg:items-stretch justify-between gap-3 overflow-hidden rounded-3xl bg-[#0B1F3A] text-white p-5 sm:p-6 lg:p-8 min-h-[190px] lg:min-h-0 transition duration-300 hover:shadow-[0_28px_50px_-28px_rgba(11,31,58,0.9)]"
     >
       <div aria-hidden="true" className="absolute -left-20 -bottom-24 w-80 h-80 rounded-full bg-[#1D4ED8]/40 blur-3xl transition-transform duration-700 group-hover:scale-125" />
       <div aria-hidden="true" className="why-us-grid absolute inset-0 opacity-[0.06]" />
 
-      <div className="relative z-10 max-w-[260px]">
+      <div className="relative z-10 min-w-0 max-w-[260px]">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-bold text-white/85">
           <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
           الأكثر طلباً
         </span>
-        <h3 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">{tile.name}</h3>
+        <h3 className="mt-3 text-[22px] sm:text-3xl lg:text-4xl font-bold leading-tight">{tile.name}</h3>
         <p className="mt-1.5 text-white/65 text-sm">{tile.count} منتج متاح</p>
-        <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white text-[#0B1F3A] px-5 py-2.5 text-sm font-bold transition group-hover:bg-[#38BDF8] group-hover:text-[#07111F]">
+        <span className="mt-4 sm:mt-5 inline-flex items-center gap-2 rounded-xl bg-white text-[#0B1F3A] px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-bold transition group-hover:bg-[#38BDF8] group-hover:text-[#07111F]">
           تسوق الآن
           <span aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
         </span>
       </div>
 
-      <div className="relative z-10 self-end sm:self-center lg:self-end mt-4 sm:mt-0 w-40 h-40 sm:w-44 sm:h-44 lg:w-64 lg:h-64 rounded-[28px] bg-white p-4 lg:p-6 shadow-[0_24px_40px_-18px_rgba(0,0,0,0.6)] rotate-[-4deg] transition duration-500 group-hover:rotate-0 group-hover:scale-105">
+      <div className="relative z-10 flex-shrink-0 lg:self-end w-28 h-28 sm:w-44 sm:h-44 lg:w-64 lg:h-64 rounded-2xl sm:rounded-[28px] bg-white p-3 sm:p-4 lg:p-6 shadow-[0_24px_40px_-18px_rgba(0,0,0,0.6)] rotate-[-4deg] transition duration-500 group-hover:rotate-0 group-hover:scale-105">
         <TileImage src={tile.image} className="w-full h-full object-contain" />
       </div>
     </Link>
