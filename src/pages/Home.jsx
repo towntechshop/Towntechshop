@@ -489,9 +489,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F4F7FB]" dir="rtl">
       {/* البانر الرئيسي: الصورة بتظهر كاملة بمقاسها الطبيعي على كل الشاشات (من غير قص) */}
-      <section className="px-3 pt-3 pb-1 sm:px-4 md:pt-5 md:pb-2">
-        <div className="max-w-[1500px] mx-auto">
-          <div className="hero-frame group relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0B1F3A] shadow-[0_20px_45px_-28px_rgba(11,31,58,0.75)] ring-1 ring-slate-900/5">
+      <section className="p-0">
+        <div className="w-full">
+          <div className="hero-frame relative w-full overflow-hidden bg-[#0B1F3A]">
             {heroImageUrl ? (
               <img
                 src={heroImageUrl}
@@ -499,7 +499,7 @@ export default function Home() {
                 width="1920"
                 height="640"
                 fetchPriority="high"
-                className="hero-settle block w-full h-auto transition-transform duration-[1.2s] ease-out md:group-hover:scale-[1.015]"
+                className="hero-settle block w-full h-auto"
               />
             ) : (
               <div className="w-full aspect-[3/1] bg-gradient-to-l from-[#07111F] via-[#0B2A45] to-[#1E5A83]" />
