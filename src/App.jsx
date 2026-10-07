@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import WebsiteLayout from './components/WebsiteLayout'
@@ -17,27 +18,38 @@ import About from './pages/About'
 import OurWork from './pages/OurWork'
 import DynamicPage from './pages/DynamicPage'
 
-import AdminLogin from './admin/AdminLogin'
-import AdminLayout from './admin/AdminLayout'
-import AdminDashboard from './admin/AdminDashboard'
-import AdminProducts from './admin/AdminProducts'
-import AddProduct from './admin/AddProduct'
-import EditProduct from './admin/EditProduct'
-import AdminCategories from './admin/AdminCategories'
-import AdminSiteSettings from './admin/AdminSiteSettings'
-import AdminPages from './admin/AdminPages'
-import EditSitePage from './admin/EditSitePage'
-import AdminOrders from './admin/AdminOrders'
-import AdminReviews from './admin/AdminReviews'
-import AdminCoupons from './admin/AdminCoupons'
-import AdminCustomers from './admin/AdminCustomers'
-import AdminReports from './admin/AdminReports'
-import AdminShippingSettings from './admin/AdminShippingSettings'
-import AdminContactMessages from './admin/AdminContactMessages'
 import Payment from './pages/Payment'
+
+// لوحة التحكم بتتحمّل بس لما الأدمن يفتحها (الموقع أخف وأسرع للعملاء)
+const AdminLogin = lazy(() => import('./admin/AdminLogin'))
+const AdminLayout = lazy(() => import('./admin/AdminLayout'))
+const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
+const AdminProducts = lazy(() => import('./admin/AdminProducts'))
+const AddProduct = lazy(() => import('./admin/AddProduct'))
+const EditProduct = lazy(() => import('./admin/EditProduct'))
+const AdminCategories = lazy(() => import('./admin/AdminCategories'))
+const AdminSiteSettings = lazy(() => import('./admin/AdminSiteSettings'))
+const AdminPages = lazy(() => import('./admin/AdminPages'))
+const EditSitePage = lazy(() => import('./admin/EditSitePage'))
+const AdminOrders = lazy(() => import('./admin/AdminOrders'))
+const AdminReviews = lazy(() => import('./admin/AdminReviews'))
+const AdminCoupons = lazy(() => import('./admin/AdminCoupons'))
+const AdminCustomers = lazy(() => import('./admin/AdminCustomers'))
+const AdminReports = lazy(() => import('./admin/AdminReports'))
+const AdminShippingSettings = lazy(() => import('./admin/AdminShippingSettings'))
+const AdminContactMessages = lazy(() => import('./admin/AdminContactMessages'))
+
+function AdminFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-100" dir="rtl">
+      <div className="w-10 h-10 rounded-full border-4 border-slate-300 border-t-slate-900 animate-spin" />
+    </div>
+  )
+}
 
 export default function App() {
   return (
+    <Suspense fallback={<AdminFallback />}>
     <Routes>
       <Route element={<WebsiteLayout />}>
         <Route path="/" element={<Home />} />
@@ -102,5 +114,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }

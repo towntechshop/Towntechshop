@@ -20,6 +20,7 @@ import {
   STORE_WHATSAPP,
   formatStoreAddress,
 } from '../lib/siteContent'
+import { getSiteFeatures } from '../lib/siteFeatures'
 
 export const defaultSettings = {
   brand_name: 'Town Tech',
@@ -93,6 +94,7 @@ function getInitialMenuReady() {
 
 const fallbackContext = {
   settings: defaultSettings,
+  features: getSiteFeatures(defaultSettings),
   loading: true,
   menuReady: false,
   refetchSettings: async () => {},
@@ -149,6 +151,7 @@ export function SiteSettingsProvider({ children }) {
   const value = useMemo(
     () => ({
       settings,
+      features: getSiteFeatures(settings),
       loading,
       menuReady,
       refetchSettings: async () => {

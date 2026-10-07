@@ -51,7 +51,7 @@ export default function ProductsCategorySidebar({
   }
 
   return (
-    <aside className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-5 h-fit lg:sticky lg:top-24">
+    <aside className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-5 h-fit">
       <FilterSection title="الفئة">
         <div className="space-y-1 text-sm">
           <button

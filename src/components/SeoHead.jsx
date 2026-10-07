@@ -6,6 +6,7 @@ import {
   buildReviewSchemas,
 } from '../lib/seo'
 import { useSeoData } from '../hooks/useSeoData'
+import { isSelfManagedSeoPath } from '../hooks/usePageSeo'
 
 const PAGE_TITLES = {
   '/': null,
@@ -72,21 +73,25 @@ export default function SeoHead() {
       ? logoUrl
       : `${SITE_URL}${logoUrl}`
 
-    document.title = fullTitle
+    // صفحات المنتج والقسم بتحدد العنوان والوصف بنفسها (usePageSeo)
+    if (!isSelfManagedSeoPath(location.pathname)) {
+      document.title = fullTitle
 
-    upsertMeta('description', description)
-    upsertMeta('og:title', fullTitle, 'property')
-    upsertMeta('og:description', description, 'property')
-    upsertMeta('og:type', 'website', 'property')
-    upsertMeta('og:url', pageUrl, 'property')
-    upsertMeta('og:image', imageUrl, 'property')
+      upsertMeta('description', description)
+      upsertMeta('og:title', fullTitle, 'property')
+      upsertMeta('og:description', description, 'property')
+      upsertMeta('og:type', 'website', 'property')
+      upsertMeta('og:url', pageUrl, 'property')
+      upsertMeta('og:image', imageUrl, 'property')
+      upsertMeta('twitter:card', 'summary')
+      upsertMeta('twitter:title', fullTitle)
+      upsertMeta('twitter:description', description)
+      upsertMeta('twitter:image', imageUrl)
+
+      upsertLink('canonical', pageUrl)
+    }
+
     upsertMeta('og:locale', 'ar_EG', 'property')
-    upsertMeta('twitter:card', 'summary')
-    upsertMeta('twitter:title', fullTitle)
-    upsertMeta('twitter:description', description)
-    upsertMeta('twitter:image', imageUrl)
-
-    upsertLink('canonical', pageUrl)
 
     upsertJsonLd(
       'seo-organization-schema',

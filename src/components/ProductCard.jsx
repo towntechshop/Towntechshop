@@ -7,6 +7,7 @@ import {
   hasSale,
   isProductInStock,
 } from '../lib/productUtils'
+import useSiteSettings from '../hooks/useSiteSettings'
 
 const BRAND_PRIMARY = '#0B1F3A'
 
@@ -22,6 +23,15 @@ export default function ProductCard({
   const sale = hasSale(product)
   const saved = getSavedAmount(product)
   const inStock = isProductInStock(product)
+  const { features } = useSiteSettings()
+  const savedPercent =
+    sale && regularPrice > 0 ? Math.round((saved / regularPrice) * 100) : 0
+  const discountLabel =
+    features.discount_badge_style === 'percent'
+      ? `خصم ${savedPercent}%`
+      : variant === 'category'
+        ? `وفر ${formatPrice(saved)} جنيه`
+        : `-${formatPrice(saved)}`
 
   const isCarousel = variant === 'carousel' || variant === 'carousel-fill'
   const isFill = variant === 'carousel-fill'
@@ -50,7 +60,7 @@ export default function ProductCard({
       <div className="relative mb-2">
         {sale && inStock && (
           <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm leading-none">
-            {isCategory ? `وفر ${formatPrice(saved)} جنيه` : `-${formatPrice(saved)}`}
+            {discountLabel}
           </span>
         )}
 

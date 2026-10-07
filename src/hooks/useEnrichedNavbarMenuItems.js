@@ -5,6 +5,11 @@ import {
   parseLegacyCategoryIdFromUrl,
 } from '../lib/categoryUrls'
 import { supabase } from '../lib/supabase'
+import useSiteSettings from './useSiteSettings'
+import {
+  fetchVisibleProductCounts,
+  filterNonEmptyCategories,
+} from '../lib/categoryVisibility'
 
 function isCameraMegaMenuLabel(label) {
   const value = String(label || '').trim()
@@ -91,14 +96,27 @@ export function enrichNavbarMenuItems(menuItems, categories, categoriesById) {
 
 export default function useEnrichedNavbarMenuItems(menuItems = []) {
   const [categories, setCategories] = useState([])
+  const { features } = useSiteSettings()
+  const hideEmpty = features.hide_empty_categories
 
   useEffect(() => {
+    let cancelled = false
+
     const loadCategories = async () => {
-      const { data } = await supabase
-        .from('categories')
-        .select('id, name, slug, parent_id, is_active')
-        .eq('is_active', true)
-        .order('name', { ascending: true })
+      const [{ data: rawData }, counts] = await Promise.all([
+        supabase
+          .from('categories')
+          .select('id, name, slug, parent_id, is_active')
+          .eq('is_active', true)
+          .order('name', { ascending: true }),
+        hideEmpty ? fetchVisibleProductCounts() : Promise.resolve(null),
+      ])
+
+      if (cancelled) return
+
+      const data = hideEmpty
+        ? filterNonEmptyCategories(rawData || [], counts)
+        : rawData
 
       const parents = (data || [])
         .filter((category) => !category.parent_id)
@@ -113,7 +131,11 @@ export default function useEnrichedNavbarMenuItems(menuItems = []) {
     }
 
     loadCategories()
-  }, [])
+
+    return () => {
+      cancelled = true
+    }
+  }, [hideEmpty])
 
   const categoriesById = useMemo(() => {
     const map = {}

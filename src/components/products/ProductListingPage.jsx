@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import useSiteSettings from '../../hooks/useSiteSettings'
+import usePageSeo from '../../hooks/usePageSeo'
+import {
+  countProductsByCategory,
+  filterNonEmptyCategories,
+} from '../../lib/categoryVisibility'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { addToCart } from '../../lib/cart'
@@ -27,6 +33,8 @@ export default function ProductListingPage({
 }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { features } = useSiteSettings()
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -106,15 +114,40 @@ export default function ProductListingPage({
     setCurrentPage(1)
   }, [searchParams])
 
+  // الأقسام الفاضية بتتخفي لو الإعداد مفعّل من لوحة التحكم (القسم المفتوح حالياً يفضل ظاهر)
+  const displayCategories = useMemo(() => {
+    if (!features.hide_empty_categories || loading) return categories
+
+    const nonEmpty = filterNonEmptyCategories(
+      categories,
+      countProductsByCategory(products)
+    )
+    const keepIds = new Set(nonEmpty.map((category) => category.id))
+
+    return categories.filter(
+      (category) =>
+        keepIds.has(category.id) ||
+        category.id === activeCategory ||
+        category.id === activeSubcategory
+    )
+  }, [
+    categories,
+    products,
+    features.hide_empty_categories,
+    loading,
+    activeCategory,
+    activeSubcategory,
+  ])
+
   const parentCategories = useMemo(
-    () => categories.filter((category) => !category.parent_id),
-    [categories]
+    () => displayCategories.filter((category) => !category.parent_id),
+    [displayCategories]
   )
 
   const subcategoriesByParent = useMemo(() => {
     const map = {}
 
-    categories
+    displayCategories
       .filter((category) => category.parent_id)
       .forEach((subcategory) => {
         if (!map[subcategory.parent_id]) {
@@ -125,7 +158,7 @@ export default function ProductListingPage({
       })
 
     return map
-  }, [categories])
+  }, [displayCategories])
 
   const productCountByCategory = useProductCountByCategory(products)
 
@@ -384,6 +417,55 @@ export default function ProductListingPage({
     ? getCategoryPath(activeCategoryRecord)
     : null
 
+  usePageSeo({
+    title: isCategoryPage && !loading ? pageTitle : null,
+    description: pageDescription,
+    image: paginatedProducts[0]?.image_url || filteredProducts[0]?.image_url,
+  })
+
+  useEffect(() => {
+    setFiltersOpen(false)
+  }, [activeCategory, activeSubcategory])
+
+  useEffect(() => {
+    if (!filtersOpen) return undefined
+
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [filtersOpen])
+
+  const activeFiltersCount =
+    Number(inStockOnly) + Number(Boolean(selectedBrand)) + Number(priceRange !== 'all')
+
+  const sidebar = (
+    <ProductsCategorySidebar
+      parentCategories={parentCategories}
+      subcategoriesByParent={subcategoriesByParent}
+      productCountByCategory={productCountByCategory}
+      activeCategory={activeCategory}
+      activeSubcategory={activeSubcategory}
+      onCategorySelect={handleCategoryClick}
+      onSubcategorySelect={handleSubcategoryClick}
+      inStockOnly={inStockOnly}
+      onInStockOnlyChange={setInStockOnly}
+      brands={availableBrands}
+      selectedBrand={selectedBrand}
+      onBrandChange={(brand) => {
+        setSelectedBrand(brand)
+        setCurrentPage(1)
+      }}
+      priceRange={priceRange}
+      onPriceRangeChange={(value) => {
+        setPriceRange(value)
+        setCurrentPage(1)
+      }}
+    />
+  )
+
   return (
     <div className="min-h-screen bg-[#F4F7FB]" dir="rtl">
       <section className="px-3 sm:px-4 pt-5 pb-6 md:pt-7">
@@ -429,28 +511,94 @@ export default function ProductListingPage({
           </nav>
 
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-5 lg:gap-6 items-start">
-            <ProductsCategorySidebar
-              parentCategories={parentCategories}
-              subcategoriesByParent={subcategoriesByParent}
-              productCountByCategory={productCountByCategory}
-              activeCategory={activeCategory}
-              activeSubcategory={activeSubcategory}
-              onCategorySelect={handleCategoryClick}
-              onSubcategorySelect={handleSubcategoryClick}
-              inStockOnly={inStockOnly}
-              onInStockOnlyChange={setInStockOnly}
-              brands={availableBrands}
-              selectedBrand={selectedBrand}
-              onBrandChange={(brand) => {
-                setSelectedBrand(brand)
-                setCurrentPage(1)
-              }}
-              priceRange={priceRange}
-              onPriceRangeChange={(value) => {
-                setPriceRange(value)
-                setCurrentPage(1)
-              }}
-            />
+            <div className="hidden lg:block lg:sticky lg:top-24">{sidebar}</div>
+
+            {/* الموبايل: أقسام أفقية + زرار فلترة بدل القائمة الطويلة */}
+            <div className="lg:hidden -mt-1 space-y-3 min-w-0">
+              <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <button
+                  type="button"
+                  onClick={() => handleCategoryClick('all')}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-black border transition ${
+                    activeCategory === 'all'
+                      ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]'
+                      : 'bg-white text-slate-700 border-slate-200'
+                  }`}
+                >
+                  الكل
+                </button>
+                {parentCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleCategoryClick(category.id)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-black border transition whitespace-nowrap ${
+                      activeCategory === category.id
+                        ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]'
+                        : 'bg-white text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-xl py-3 font-black text-slate-800 shadow-sm"
+              >
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                الفلترة والأقسام
+                {activeFiltersCount > 0 && (
+                  <span className="bg-sky-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {filtersOpen && (
+              <div className="lg:hidden fixed inset-0 z-[80]" role="dialog" aria-modal="true">
+                <button
+                  type="button"
+                  aria-label="إغلاق"
+                  onClick={() => setFiltersOpen(false)}
+                  className="absolute inset-0 bg-slate-950/50"
+                />
+                <div className="absolute inset-y-0 right-0 w-[86%] max-w-sm bg-[#F4F7FB] shadow-2xl flex flex-col">
+                  <div className="flex items-center justify-between px-4 py-4 bg-white border-b border-slate-200">
+                    <h2 className="text-lg font-black text-slate-950">الفلترة والأقسام</h2>
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 text-xl font-black"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-3">{sidebar}</div>
+                  <div className="p-3 bg-white border-t border-slate-200 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="py-3 rounded-xl font-black bg-slate-100 text-slate-800"
+                    >
+                      مسح الفلاتر
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="py-3 rounded-xl font-black bg-[#0B1F3A] text-white"
+                    >
+                      عرض {totalProducts} منتج
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 md:p-7 min-w-0">
               <div className="mb-6">

@@ -5,6 +5,21 @@
       "destination": "/api/favicon"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/products/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebookcatalog|whatsapp|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|pinterest|skypeuripreview|viber|snapchat).*"
+        }
+      ],
+      "destination": "/api/product-preview?id=:id"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

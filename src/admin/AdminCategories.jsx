@@ -1,9 +1,11 @@
 import { Fragment, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import CategorySubcategoriesPanel from './CategorySubcategoriesPanel'
+import { fetchVisibleProductCounts } from '../lib/categoryVisibility'
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState([])
+  const [productCounts, setProductCounts] = useState({})
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [isActive, setIsActive] = useState(true)
@@ -26,10 +28,15 @@ export default function AdminCategories() {
   const getCategories = async () => {
     setLoading(true)
 
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const [{ data, error }, counts] = await Promise.all([
+      supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      fetchVisibleProductCounts(),
+    ])
+
+    setProductCounts(counts || {})
 
     if (!error) {
       const allCategories = data || []
@@ -253,14 +260,14 @@ export default function AdminCategories() {
 
           <div className="bg-white rounded-3xl px-4 py-4 text-center shadow-sm border border-slate-200">
             <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black mb-2">
-              مفعلة
+              ظاهرة
             </p>
             <p className="text-2xl font-black text-emerald-600">{activeCount}</p>
           </div>
 
           <div className="bg-white rounded-3xl px-4 py-4 text-center shadow-sm border border-slate-200">
             <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black mb-2">
-              غير مفعلة
+              مخفية
             </p>
             <p className="text-2xl font-black text-rose-600">{inactiveCount}</p>
           </div>
@@ -368,7 +375,7 @@ export default function AdminCategories() {
 
               <div>
                 <p className="font-black text-slate-900">
-                  القسم مفعل
+                  القسم ظاهر للعملاء
                 </p>
 
                 <p className="text-slate-500 text-sm font-bold mt-1">
@@ -516,6 +523,11 @@ export default function AdminCategories() {
                                   {subcategoryCount} قسم فرعي
                                 </p>
                               )}
+
+                              <CategoryProductCount
+                                category={category}
+                                counts={productCounts}
+                              />
                             </td>
 
                             <td className="p-4 text-slate-500 font-bold">
@@ -530,7 +542,7 @@ export default function AdminCategories() {
                                     : 'inline-flex bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-black'
                                 }
                               >
-                                {category.is_active ? 'مفعل' : 'غير مفعل'}
+                                {category.is_active ? 'ظاهر للعملاء' : 'مخفي'}
                               </span>
                             </td>
 
@@ -565,7 +577,7 @@ export default function AdminCategories() {
                                       : 'bg-green-50 text-green-700 px-4 py-2 rounded-xl font-black hover:bg-green-100 transition'
                                   }
                                 >
-                                  {category.is_active ? 'تعطيل' : 'تفعيل'}
+                                  {category.is_active ? 'إخفاء' : 'إظهار'}
                                 </button>
 
                                 <button
@@ -635,6 +647,11 @@ export default function AdminCategories() {
                                 {subcategoryCount} قسم فرعي
                               </p>
                             )}
+
+                            <CategoryProductCount
+                              category={category}
+                              counts={productCounts}
+                            />
                           </div>
                         </div>
 
@@ -645,7 +662,7 @@ export default function AdminCategories() {
                               : 'bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-black'
                           }
                         >
-                          {category.is_active ? 'مفعل' : 'غير مفعل'}
+                          {category.is_active ? 'ظاهر للعملاء' : 'مخفي'}
                         </span>
                       </div>
 
@@ -667,7 +684,7 @@ export default function AdminCategories() {
                               : 'w-full bg-slate-100 text-slate-900 px-4 py-3 rounded-3xl font-black hover:bg-slate-200 transition'
                           }
                         >
-                          {category.is_active ? 'معطل' : 'تفعيل'}
+                          {category.is_active ? 'إخفاء' : 'إظهار'}
                         </button>
 
                         <button
@@ -708,5 +725,23 @@ export default function AdminCategories() {
         </section>
       </div>
     </div>
+  )
+}
+function CategoryProductCount({ category, counts }) {
+  const total =
+    (counts[category.id] || 0) +
+    (category.subcategories || []).reduce(
+      (sum, subcategory) => sum + (counts[subcategory.id] || 0),
+      0
+    )
+
+  return (
+    <p
+      className={`text-xs font-black mt-1 ${
+        total > 0 ? 'text-emerald-700' : 'text-amber-600'
+      }`}
+    >
+      {total > 0 ? `${total} منتج ظاهر` : 'فاضي — بيتخفي تلقائياً لو الإعداد مفعّل'}
+    </p>
   )
 }

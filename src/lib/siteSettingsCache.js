@@ -29,6 +29,7 @@ const CACHE_FIELDS = [
   'paymob_public_key',
   'enable_vodafone_cash',
   'enable_instapay',
+  'site_features',
 ]
 
 export function pickCacheableSettings(data) {

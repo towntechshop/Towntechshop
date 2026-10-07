@@ -284,7 +284,7 @@ export default function CategorySubcategoriesPanel({ category, onRefresh }) {
             onChange={(e) => setIsActive(e.target.checked)}
             className="w-4 h-4"
           />
-          <span className="text-sm font-bold text-slate-700">القسم مفعل</span>
+          <span className="text-sm font-bold text-slate-700">القسم ظاهر للعملاء</span>
         </label>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -346,7 +346,7 @@ export default function CategorySubcategoriesPanel({ category, onRefresh }) {
                       : 'inline-flex bg-red-50 text-red-700 px-2.5 py-1 rounded-full text-xs font-black'
                   }
                 >
-                  {subcategory.is_active ? 'مفعل' : 'غير مفعل'}
+                  {subcategory.is_active ? 'ظاهر للعملاء' : 'مخفي'}
                 </span>
 
                 <button
@@ -366,7 +366,7 @@ export default function CategorySubcategoriesPanel({ category, onRefresh }) {
                       : 'bg-green-50 text-green-700 px-3 py-1.5 rounded-lg font-black text-xs hover:bg-green-100 transition'
                   }
                 >
-                  {subcategory.is_active ? 'تعطيل' : 'تفعيل'}
+                  {subcategory.is_active ? 'إخفاء' : 'إظهار'}
                 </button>
 
                 <button
