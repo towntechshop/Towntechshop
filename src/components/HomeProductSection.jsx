@@ -45,7 +45,7 @@ export default function HomeProductSection({
                   key={item}
                   className="flex-shrink-0 w-[185px] md:w-[280px] bg-slate-50 rounded-2xl border border-slate-100 p-3 animate-pulse"
                 >
-                  <div className="h-[132px] md:h-[164px] bg-slate-100 rounded-xl mb-3" />
+                  <div className="aspect-square bg-slate-100 rounded-xl mb-3" />
                   <div className="h-3 bg-slate-100 rounded mb-2" />
                   <div className="h-9 bg-slate-100 rounded-xl" />
                 </div>

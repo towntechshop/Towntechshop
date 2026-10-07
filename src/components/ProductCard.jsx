@@ -40,10 +40,10 @@ export default function ProductCard({
   const imageBoxClass = isFill
     ? 'aspect-square w-full rounded-xl'
     : isCarousel
-      ? 'h-[132px] sm:h-[148px] md:h-[164px] rounded-xl'
+      ? 'aspect-square rounded-xl'
       : isCategory
         ? 'aspect-square rounded-xl'
-        : 'aspect-[4/3] sm:aspect-square rounded-lg sm:rounded-xl'
+        : 'aspect-square rounded-lg sm:rounded-xl'
 
   return (
     <article
@@ -72,13 +72,13 @@ export default function ProductCard({
 
         <Link
           to={`/products/${product.id}`}
-          className={`block bg-[#F8FAFC] overflow-hidden ring-1 ring-slate-100 ${imageBoxClass}`}
+          className={`block bg-[#F5F7FA] overflow-hidden ${imageBoxClass}`}
         >
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.title}
-              className="w-full h-full object-contain p-2 sm:p-3 transition duration-300 group-hover:scale-105"
+              className="w-full h-full object-contain mix-blend-multiply p-1.5 sm:p-2.5 transition duration-300 group-hover:scale-105"
               loading="lazy"
             />
           ) : (

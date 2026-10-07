@@ -59,10 +59,10 @@ function CompactTile({ tile, delay }) {
         to={tile.to}
         className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-3 transition duration-300 hover:-translate-y-1 hover:border-[#0B1F3A]/30 hover:shadow-[0_16px_30px_-20px_rgba(11,31,58,0.55)]"
       >
-        <div className="aspect-square rounded-xl bg-[#F4F7FB] p-4 overflow-hidden">
+        <div className="aspect-square rounded-xl bg-[#F5F7FA] p-2.5 overflow-hidden">
           <TileImage
             src={tile.image}
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
           />
         </div>
 
