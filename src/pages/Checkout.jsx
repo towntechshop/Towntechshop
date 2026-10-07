@@ -257,236 +257,298 @@ export default function Checkout() {
       }
     } catch (error) {
       setErrorMessage(error.message || 'حدث خطأ أثناء إرسال الطلب.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setLoading(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-slate-100 px-4 py-12" dir="rtl">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8 text-right">
-          <h1 className="text-3xl font-black text-slate-900">
-            إتمام الطلب
-          </h1>
+  const paymentOptions = [
+    {
+      id: 'cash_on_delivery',
+      label: 'الدفع عند الاستلام',
+      description: 'ادفع كاش للمندوب لما الطلب يوصلك',
+      icon: 'cash',
+      available: true,
+    },
+    {
+      id: 'paymob',
+      label: 'بطاقة بنكية (فيزا / ماستركارد)',
+      description: 'دفع آمن أونلاين من خلال Paymob',
+      icon: 'card',
+      available: !paymobOptionDisabled,
+    },
+    {
+      id: 'vodafone_cash',
+      label: 'فودافون كاش',
+      description: 'حوّل المبلغ وابعت صورة التحويل على واتساب',
+      icon: 'wallet',
+      available: Boolean(siteSettings.enable_vodafone_cash),
+    },
+    {
+      id: 'instapay',
+      label: 'إنستا باي',
+      description: 'حوّل المبلغ وابعت صورة التحويل على واتساب',
+      icon: 'bank',
+      available: Boolean(siteSettings.enable_instapay),
+    },
+  ].filter((option) => option.available)
 
-          <p className="text-slate-500 mt-1 font-bold">
-            اكتب بياناتك لتأكيد الطلب واختيار طريقة الدفع المناسبة
+  const inputClass =
+    'w-full border border-slate-300 rounded-xl px-4 py-3 bg-white outline-none focus:border-[#0B1F3A] focus:ring-2 focus:ring-[#0B1F3A]/10 transition text-right placeholder:text-slate-400'
+
+  const phoneDigits = customerPhone.replace(/\D/g, '')
+  const phoneLooksInvalid =
+    phoneDigits.length > 0 && !/^(01\d{9}|201\d{9})$/.test(phoneDigits)
+
+  const itemsCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
+
+  return (
+    <div className="min-h-screen bg-[#F4F7FB] px-4 pt-6 pb-28 lg:pb-12" dir="rtl">
+      <div className="max-w-6xl mx-auto">
+        {/* خطوات الشراء */}
+        <ol className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold mb-6" aria-label="خطوات الشراء">
+          <li>
+            <Link to="/cart" className="flex items-center gap-2 text-slate-500 hover:text-[#0B1F3A]">
+              <span className="w-6 h-6 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center text-xs">✓</span>
+              العربة
+            </Link>
+          </li>
+          <li aria-hidden="true" className="w-6 sm:w-10 h-px bg-slate-300" />
+          <li className="flex items-center gap-2 text-[#0B1F3A]" aria-current="step">
+            <span className="w-6 h-6 rounded-full bg-[#D7262E] text-white flex items-center justify-center text-xs">2</span>
+            البيانات والدفع
+          </li>
+          <li aria-hidden="true" className="w-6 sm:w-10 h-px bg-slate-300" />
+          <li className="flex items-center gap-2 text-slate-400">
+            <span className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs">3</span>
+            تأكيد الطلب
+          </li>
+        </ol>
+
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#0B1F3A]">إتمام الطلب</h1>
+          <p className="text-slate-500 mt-1">
+            اكتب بيانات التوصيل واختار طريقة الدفع. بنأكد معاك الطلب بالتليفون قبل الشحن.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="bg-red-50 text-red-600 rounded-xl p-4 mb-6 font-bold text-right">
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6 font-bold">
             {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow p-6">
-              <h2 className="text-xl font-black text-slate-900 mb-4">
-                بيانات العميل
-              </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-5 lg:gap-6 items-start">
+            <div className="space-y-5 min-w-0">
+              {/* بيانات التوصيل */}
+              <section className="bg-white rounded-2xl border border-slate-200 p-5 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-[#0B1F3A] mb-5">بيانات التوصيل</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="mb-4">
-                  <label className="block mb-2 text-sm font-bold text-slate-700">
-                    الاسم بالكامل *
-                  </label>
-
-                  <input
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 text-right"
-                    required
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block mb-2 text-sm font-bold text-slate-700">
-                    رقم الهاتف *
-                  </label>
-
-                  <input
-                    type="text"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 text-right"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-2 text-sm font-bold text-slate-700">
-                  البريد الإلكتروني
-                </label>
-
-                <input
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="اختياري"
-                  className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 text-right"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-2 text-sm font-bold text-slate-700">
-                  العنوان بالتفصيل *
-                </label>
-
-                <textarea
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 min-h-28 text-right"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-2 text-sm font-bold text-slate-700">
-                  المدينة / المنطقة
-                </label>
-
-                <input
-                  type="text"
-                  value={customerCity}
-                  onChange={(e) => setCustomerCity(e.target.value)}
-                  placeholder="مثال: القاهرة - مدينة نصر"
-                  className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 text-right"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm font-bold text-slate-700">
-                  ملاحظات على الطلب
-                </label>
-
-                <textarea
-                  value={customerNotes}
-                  onChange={(e) => setCustomerNotes(e.target.value)}
-                  placeholder="اكتب أي ملاحظات خاصة بالطلب"
-                  className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-slate-900 min-h-24 text-right"
-                />
-              </div>
-
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 mt-5">
-                <h3 className="text-lg font-black text-slate-900 mb-4">
-                  اختيار طريقة الدفع
-                </h3>
-
-                <div className="space-y-3">
-                  {[
-                    { id: 'cash_on_delivery', label: 'الدفع عند الاستلام' },
-                    {
-                      id: 'paymob',
-                      label: 'بطاقة فيزا/ماستر عبر Paymob',
-                      disabled: paymobOptionDisabled,
-                      hint: settingsLoading
-                        ? 'جاري تحميل إعدادات الدفع...'
-                        : !isPaymobReady
-                          ? 'يتطلب تفعيل Paymob وإضافة Integration ID و Public Key.'
-                          : undefined,
-                    },
-                    {
-                      id: 'vodafone_cash',
-                      label: 'فودافون كاش',
-                      disabled: !siteSettings.enable_vodafone_cash,
-                      hint: !siteSettings.enable_vodafone_cash
-                        ? 'تفعيل فودافون كاش في الإعدادات أولاً.'
-                        : undefined,
-                    },
-                    {
-                      id: 'instapay',
-                      label: 'إنستا باي',
-                      disabled: !siteSettings.enable_instapay,
-                      hint: !siteSettings.enable_instapay
-                        ? 'تفعيل إنستا باي في الإعدادات أولاً.'
-                        : undefined,
-                    },
-                  ].map((option) => (
-                    <label
-                      key={option.id}
-                      className={`flex items-center gap-3 rounded-2xl border px-4 py-4 ${
-                        option.disabled
-                          ? 'border-slate-200 bg-slate-100 text-slate-400'
-                          : 'border-slate-300 bg-white'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={option.id}
-                        checked={paymentMethod === option.id}
-                        disabled={option.disabled}
-                        onChange={() => setPaymentMethod(option.id)}
-                        className="w-5 h-5"
-                      />
-
-                      <div>
-                        <p className="font-black">{option.label}</p>
-                        {option.hint && (
-                          <p className="text-xs text-slate-500 font-bold mt-1">
-                            {option.hint}
-                          </p>
-                        )}
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="checkout-name" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      الاسم بالكامل <span className="text-[#D7262E]">*</span>
                     </label>
-                  ))}
+                    <input
+                      id="checkout-name"
+                      type="text"
+                      autoComplete="name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="checkout-phone" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      رقم الموبايل <span className="text-[#D7262E]">*</span>
+                    </label>
+                    <input
+                      id="checkout-phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      dir="ltr"
+                      placeholder="01xxxxxxxxx"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      className={`${inputClass} text-left ${phoneLooksInvalid ? 'border-amber-400' : ''}`}
+                      required
+                    />
+                    {phoneLooksInvalid && (
+                      <p className="text-xs text-amber-700 font-bold mt-1.5">
+                        رقم الموبايل المصري 11 رقم ويبدأ بـ 01
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="checkout-address" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      العنوان بالتفصيل <span className="text-[#D7262E]">*</span>
+                    </label>
+                    <textarea
+                      id="checkout-address"
+                      autoComplete="street-address"
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      placeholder="الشارع، رقم العمارة، الدور، علامة مميزة"
+                      className={`${inputClass} min-h-24`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="checkout-city" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      المحافظة / المنطقة
+                    </label>
+                    <input
+                      id="checkout-city"
+                      type="text"
+                      autoComplete="address-level2"
+                      value={customerCity}
+                      onChange={(e) => setCustomerCity(e.target.value)}
+                      placeholder="مثال: القاهرة - مدينة نصر"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="checkout-email" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      البريد الإلكتروني <span className="text-slate-400 font-normal">(اختياري)</span>
+                    </label>
+                    <input
+                      id="checkout-email"
+                      type="email"
+                      autoComplete="email"
+                      dir="ltr"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      className={`${inputClass} text-left`}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="checkout-notes" className="block mb-1.5 text-sm font-bold text-slate-700">
+                      ملاحظات على الطلب <span className="text-slate-400 font-normal">(اختياري)</span>
+                    </label>
+                    <textarea
+                      id="checkout-notes"
+                      value={customerNotes}
+                      onChange={(e) => setCustomerNotes(e.target.value)}
+                      placeholder="مثلاً: محتاج تركيب، أو مواعيد مناسبة للتوصيل"
+                      className={`${inputClass} min-h-20`}
+                    />
+                  </div>
                 </div>
-              </div>
+              </section>
+
+              {/* طريقة الدفع */}
+              <section className="bg-white rounded-2xl border border-slate-200 p-5 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-[#0B1F3A] mb-4">طريقة الدفع</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup">
+                  {paymentOptions.map((option) => {
+                    const selected = paymentMethod === option.id
+
+                    return (
+                      <label
+                        key={option.id}
+                        className={`relative flex items-start gap-3 rounded-xl border-2 px-4 py-3.5 cursor-pointer transition ${
+                          selected
+                            ? 'border-[#0B1F3A] bg-[#0B1F3A]/[0.03]'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={option.id}
+                          checked={selected}
+                          onChange={() => setPaymentMethod(option.id)}
+                          className="sr-only"
+                        />
+                        <span
+                          className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                            selected ? 'bg-[#0B1F3A] text-white' : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          <PaymentIcon name={option.icon} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-bold text-slate-900 leading-6">{option.label}</span>
+                          <span className="block text-xs text-slate-500 leading-5 mt-0.5">{option.description}</span>
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className={`absolute top-3 left-3 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            selected ? 'border-[#0B1F3A]' : 'border-slate-300'
+                          }`}
+                        >
+                          {selected && <span className="w-2.5 h-2.5 rounded-full bg-[#0B1F3A]" />}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+
+                {settingsLoading && (
+                  <p className="text-xs text-slate-500 mt-3">جاري تحميل طرق الدفع...</p>
+                )}
+              </section>
             </div>
 
-            <div className="bg-white rounded-2xl shadow p-6 h-fit">
-              <h2 className="text-xl font-black text-slate-900 mb-4">
-                ملخص الطلب
-              </h2>
-
-              <div className="space-y-3 mb-4">
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start justify-between gap-3 border-b pb-3"
-                  >
-                    <div className="text-right">
-                      <p className="font-black text-slate-900">
-                        {item.title}
-                      </p>
-
-                      <p className="text-sm text-slate-500 font-bold">
-                        الكمية: {item.quantity}
-                      </p>
-                    </div>
-
-                    <strong className="text-slate-900 whitespace-nowrap">
-                      {formatPrice(Number(item.price || 0) * item.quantity)} جنيه
-                    </strong>
-                  </div>
-                ))}
+            {/* ملخص الطلب */}
+            <aside className="bg-white rounded-2xl border border-slate-200 p-5 md:p-6 lg:sticky lg:top-24 min-w-0">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg md:text-xl font-bold text-[#0B1F3A]">ملخص الطلب</h2>
+                <Link to="/cart" className="text-sm font-bold text-sky-700 hover:underline">
+                  تعديل ({itemsCount})
+                </Link>
               </div>
 
-              <div className="border border-slate-200 rounded-xl p-3 mb-4">
-                <label className="block mb-2 text-sm font-black text-slate-700">
+              <ul className="space-y-3 mb-4 max-h-72 overflow-y-auto">
+                {items.map((item) => (
+                  <li key={item.id} className="flex items-center gap-3">
+                    <span className="relative flex-shrink-0 w-14 h-14 rounded-lg border border-slate-200 bg-white overflow-hidden">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt="" className="w-full h-full object-contain p-1" />
+                      ) : null}
+                      <span className="absolute -top-1.5 -left-1.5 min-w-5 h-5 px-1 rounded-full bg-[#0B1F3A] text-white text-[11px] font-bold flex items-center justify-center">
+                        {item.quantity}
+                      </span>
+                    </span>
+                    <span className="flex-1 min-w-0 text-sm font-bold text-slate-800 leading-6 line-clamp-2">
+                      {item.title}
+                    </span>
+                    <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
+                      {formatPrice(Number(item.price || 0) * item.quantity)} ج
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="border-t border-slate-100 pt-4 mb-4">
+                <label htmlFor="checkout-coupon" className="block mb-2 text-sm font-bold text-slate-700">
                   كود الخصم
                 </label>
-
                 <div className="flex gap-2">
                   <input
+                    id="checkout-coupon"
                     type="text"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     disabled={!!appliedCoupon}
-                    placeholder="اكتب كود الخصم"
-                    className="flex-1 border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-slate-900 disabled:bg-slate-100 text-right"
+                    placeholder="لو معاك كود اكتبه هنا"
+                    className="flex-1 min-w-0 border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:border-[#0B1F3A] disabled:bg-slate-100 text-right"
                   />
-
                   {appliedCoupon ? (
                     <button
                       type="button"
                       onClick={removeCoupon}
-                      className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-black hover:bg-red-100"
+                      className="flex-shrink-0 bg-red-50 text-red-700 px-4 rounded-xl font-bold hover:bg-red-100"
                     >
                       إزالة
                     </button>
@@ -495,87 +557,132 @@ export default function Checkout() {
                       type="button"
                       onClick={applyCoupon}
                       disabled={applyingCoupon}
-                      className="bg-slate-900 text-white px-4 py-2 rounded-lg font-black hover:bg-slate-700 disabled:opacity-60"
+                      className="flex-shrink-0 bg-slate-100 text-[#0B1F3A] px-4 rounded-xl font-bold hover:bg-slate-200 disabled:opacity-60"
                     >
                       {applyingCoupon ? '...' : 'تطبيق'}
                     </button>
                   )}
                 </div>
-
                 {couponMessage && (
-                  <p
-                    className={
-                      appliedCoupon
-                        ? 'text-sm text-green-600 font-bold mt-2'
-                        : 'text-sm text-red-600 font-bold mt-2'
-                    }
-                  >
+                  <p className={`text-sm font-bold mt-2 ${appliedCoupon ? 'text-green-700' : 'text-red-600'}`}>
                     {couponMessage}
                   </p>
                 )}
               </div>
 
-              {enableFreeShipping && !freeShippingApplied && (
-                <div className="bg-blue-50 text-blue-700 rounded-xl p-3 mb-4 text-sm font-bold">
-                  أضف {formatPrice(remainingForFreeShipping)} جنيه للحصول على شحن مجاني.
+              {enableFreeShipping && !freeShippingApplied && remainingForFreeShipping > 0 && (
+                <div className="bg-sky-50 text-sky-800 rounded-xl p-3 mb-4 text-sm font-bold">
+                  باقي {formatPrice(remainingForFreeShipping)} جنيه وتاخد شحن مجاني
                 </div>
               )}
 
-              {freeShippingApplied && (
-                <div className="bg-green-50 text-green-700 rounded-xl p-3 mb-4 text-sm font-bold">
-                  تم تطبيق الشحن المجاني.
+              <dl className="space-y-2.5 text-sm">
+                <div className="flex items-center justify-between">
+                  <dt className="text-slate-500">المنتجات</dt>
+                  <dd className="font-bold text-slate-900">{formatPrice(subtotal)} جنيه</dd>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between border-b pb-3 mb-3">
-                <span className="text-slate-500 font-bold">إجمالي المنتجات</span>
-                <strong>{formatPrice(subtotal)} جنيه</strong>
-              </div>
-
-              {couponDiscount > 0 && (
-                <div className="flex items-center justify-between border-b pb-3 mb-3 text-green-600">
-                  <span className="font-bold">الخصم</span>
-                  <strong>-{formatPrice(couponDiscount)} جنيه</strong>
+                {couponDiscount > 0 && (
+                  <div className="flex items-center justify-between text-green-700">
+                    <dt>الخصم</dt>
+                    <dd className="font-bold">-{formatPrice(couponDiscount)} جنيه</dd>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <dt className="text-slate-500">الشحن</dt>
+                  <dd className={`font-bold ${finalShippingFee === 0 ? 'text-green-700' : 'text-slate-900'}`}>
+                    {finalShippingFee === 0 ? 'مجاني' : `${formatPrice(finalShippingFee)} جنيه`}
+                  </dd>
                 </div>
-              )}
+                <div className="flex items-center justify-between">
+                  <dt className="text-slate-500">طريقة الدفع</dt>
+                  <dd className="font-bold text-slate-900">{getPaymentMethodLabel(paymentMethod)}</dd>
+                </div>
+              </dl>
 
-              <div className="flex items-center justify-between border-b pb-3 mb-3">
-                <span className="text-slate-500 font-bold">الشحن</span>
-                <strong>
-                  {finalShippingFee === 0
-                    ? 'مجاني'
-                    : `${formatPrice(finalShippingFee)} جنيه`}
-                </strong>
-              </div>
-
-              <div className="flex items-center justify-between border-b pb-3 mb-3">
-                <span className="text-slate-500 font-bold">طريقة الدفع</span>
-                <strong>{getPaymentMethodLabel(paymentMethod)}</strong>
-              </div>
-
-              <div className="flex items-center justify-between text-lg mb-6">
-                <span className="font-black">الإجمالي</span>
-                <strong>{formatPrice(totalAmount)} جنيه</strong>
+              <div className="flex items-center justify-between border-t border-slate-200 mt-4 pt-4 mb-5">
+                <span className="font-bold text-[#0B1F3A]">الإجمالي</span>
+                <span className="text-2xl font-bold text-[#0B1F3A]">
+                  {formatPrice(totalAmount)} <span className="text-sm text-slate-500">جنيه</span>
+                </span>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 text-white py-3 rounded-lg font-black hover:bg-slate-700 disabled:opacity-60"
+                className="hidden lg:block w-full bg-[#D7262E] text-white py-3.5 rounded-xl font-bold text-lg hover:bg-[#bf1f27] disabled:opacity-60 transition"
               >
-                {loading ? 'جاري إرسال الطلب...' : 'تأكيد الطلب'}
+                {loading ? 'جاري إرسال الطلب...' : paymentMethod === 'paymob' ? 'متابعة للدفع' : 'تأكيد الطلب'}
               </button>
 
-              <Link
-                to="/cart"
-                className="block text-center mt-3 text-blue-600 font-black hover:underline"
-              >
-                الرجوع لعربة التسوق
-              </Link>
-            </div>
+              <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mt-3">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+                بياناتك محمية ومش بنشاركها مع حد
+              </p>
+            </aside>
+          </div>
+
+          {/* زرار التأكيد الثابت على الموبايل */}
+          <div className="lg:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-between bg-[#D7262E] text-white px-5 py-3.5 rounded-xl font-bold hover:bg-[#bf1f27] disabled:opacity-60 transition"
+            >
+              <span>{loading ? 'جاري إرسال الطلب...' : paymentMethod === 'paymob' ? 'متابعة للدفع' : 'تأكيد الطلب'}</span>
+              <span>{formatPrice(totalAmount)} جنيه</span>
+            </button>
           </div>
         </form>
       </div>
     </div>
+  )
+}
+
+function PaymentIcon({ name }) {
+  const common = {
+    viewBox: '0 0 24 24',
+    className: 'w-5 h-5',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': true,
+  }
+
+  if (name === 'card') {
+    return (
+      <svg {...common}>
+        <rect x="3" y="5.5" width="18" height="13" rx="2" />
+        <path d="M3 10h18M7 15h4" />
+      </svg>
+    )
+  }
+
+  if (name === 'wallet') {
+    return (
+      <svg {...common}>
+        <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+        <path d="M10.5 18.5h3" />
+      </svg>
+    )
+  }
+
+  if (name === 'bank') {
+    return (
+      <svg {...common}>
+        <path d="M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20.5h18" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg {...common}>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
   )
 }

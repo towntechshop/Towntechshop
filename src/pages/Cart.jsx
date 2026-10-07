@@ -230,64 +230,26 @@ export default function Cart() {
         </div>
 
         {shouldShowFreeShippingMessage && (
-          <div className="mb-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div
-              className="p-5 md:p-6 text-white"
-              style={{
-                background:
-                  'linear-gradient(135deg, #0B1F3A 0%, #123D68 55%, #07111F 100%)',
-              }}
-            >
-              {freeShippingApplied ? (
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-black">
-                      مبروك! طلبك حصل على شحن مجاني
-                    </h2>
-
-                    <p className="text-white/75 mt-2 font-bold">
-                      قيمة طلبك وصلت للحد المطلوب للشحن المجاني.
-                    </p>
-                  </div>
-
-                  <div className="bg-green-500 text-white px-5 py-3 rounded-2xl font-black text-center">
-                    الشحن مجاني
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-black">
-                        اطلب بـ {formatPrice(freeShippingMinAmount)} جنيه أو أكثر وخد شحن مجاني
-                      </h2>
-
-                      <p className="text-white/75 mt-2 font-bold">
-                        باقي لك {formatPrice(remainingForFreeShipping)} جنيه فقط للحصول على شحن مجاني.
-                      </p>
-                    </div>
-
-                    <Link
-                      to="/products"
-                      className="bg-white text-[#0B1F3A] px-5 py-3 rounded-2xl font-black text-center hover:bg-sky-50 transition"
-                    >
-                      كمل تسوق
-                    </Link>
-                  </div>
-
-                  <div className="mt-5 bg-white/15 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#38BDF8]"
-                      style={{
-                        width: `${Math.min(
-                          (subtotal / freeShippingMinAmount) * 100,
-                          100
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                </div>
+          <div className="mb-5 bg-white rounded-2xl border border-slate-200 px-4 py-3.5 md:px-5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <p className={`font-bold ${freeShippingApplied ? 'text-green-700' : 'text-[#0B1F3A]'}`}>
+                {freeShippingApplied
+                  ? 'طلبك عليه شحن مجاني'
+                  : `باقي ${formatPrice(remainingForFreeShipping)} جنيه وتاخد شحن مجاني`}
+              </p>
+              {!freeShippingApplied && (
+                <Link to="/products" className="flex-shrink-0 font-bold text-sky-700 hover:underline">
+                  كمّل تسوق
+                </Link>
               )}
+            </div>
+            <div className="mt-2.5 bg-slate-100 rounded-full h-2 overflow-hidden" aria-hidden="true">
+              <div
+                className={`h-full rounded-full transition-all ${freeShippingApplied ? 'bg-green-600' : 'bg-[#0B1F3A]'}`}
+                style={{
+                  width: `${Math.min((subtotal / freeShippingMinAmount) * 100, 100)}%`,
+                }}
+              />
             </div>
           </div>
         )}
@@ -399,7 +361,7 @@ export default function Cart() {
                 type="button"
                 onClick={handleCheckout}
                 className="mt-6 w-full text-white rounded-2xl py-4 font-black text-xl hover:opacity-90 transition"
-                style={{ backgroundColor: BRAND_COLORS.primary }}
+                style={{ backgroundColor: '#D7262E' }}
               >
                 إتمام الطلب
               </button>
@@ -535,7 +497,7 @@ export default function Cart() {
                 type="button"
                 onClick={handleCheckout}
                 className="text-white px-6 py-3 rounded-xl font-black hover:opacity-90 transition"
-                style={{ backgroundColor: BRAND_COLORS.primary }}
+                style={{ backgroundColor: '#D7262E' }}
               >
                 إتمام الطلب
               </button>
