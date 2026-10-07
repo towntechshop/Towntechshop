@@ -4,13 +4,13 @@ import { supabase } from '../lib/supabase'
 import useSiteSettings from '../hooks/useSiteSettings'
 import ReviewsCarousel from '../components/ReviewsCarousel'
 import ProductCard from '../components/ProductCard'
-import ProductCarousel from '../components/ProductCarousel'
 import HomeProductSection from '../components/HomeProductSection'
 import HomeOurWorkSection from '../components/HomeOurWorkSection'
 import HomeDesignBlock from '../components/HomeDesignBlock'
 import HomeCategoryGrid from '../components/HomeCategoryGrid'
 import { TrustBadgesStrip } from '../components/TrustBadges'
 import Reveal from '../components/Reveal'
+import HomePromoBanners from '../components/HomePromoBanners'
 import { addToCart } from '../lib/cart'
 import { RETURN_POLICY_SUMMARY, STORE_SEO_DESCRIPTION_LINES } from '../lib/siteContent'
 import { getCategoryPath } from '../lib/categoryUrls'
@@ -200,13 +200,7 @@ function findCamerasSubcategory(subcategories, usedIds) {
 }
 
 function SectionDivider() {
-  return (
-    <div className="px-4 py-3 md:py-5">
-      <div className="max-w-[1500px] mx-auto">
-        <div className="h-px bg-slate-200" />
-      </div>
-    </div>
-  )
+  return <div className="h-1 md:h-2" aria-hidden="true" />
 }
 
 const benefitCards = [
@@ -355,11 +349,8 @@ export default function Home() {
     }, 1200)
   }
 
-  const renderCarouselProduct = (product) => (
-    <div
-      key={product.id}
-      className="flex-shrink-0 snap-start w-[185px] sm:w-[205px] md:w-[280px] lg:w-[292px]"
-    >
+  const renderCarouselProduct = (product, index = 0) => (
+    <div key={product.id} className={index >= 4 ? 'hidden sm:block' : ''}>
       <ProductCard
         product={product}
         added={addedProductId === product.id}
@@ -513,8 +504,6 @@ export default function Home() {
         </div>
       </section>
 
-      <TrustBadgesStrip />
-
       <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
 
       {features.home_category_grid_enabled && categoryTiles.length >= 2 && (
@@ -523,6 +512,8 @@ export default function Home() {
           tiles={categoryTiles}
         />
       )}
+
+      <TrustBadgesStrip />
 
       {features.home_intro_enabled && (
         <section className="px-4 py-5 md:py-7">
@@ -571,10 +562,7 @@ export default function Home() {
           .filter((item) => item.type === 'section').length
 
         return (
-          <div
-            key={section.id}
-            className={sectionIndex % 2 === 0 ? 'bg-[#F4F7FB]' : 'bg-white'}
-          >
+          <div key={section.id}>
             <Reveal>
             <HomeProductSection
               title={section.title}
@@ -583,10 +571,12 @@ export default function Home() {
               loading={loading}
               emptyText={`لا توجد منتجات في ${section.title} حتى الآن.`}
             >
-              {section.products.map((product) => renderCarouselProduct(product))}
+              {section.products
+                .slice(0, 6)
+                .map((product, productIndex) => renderCarouselProduct(product, productIndex))}
             </HomeProductSection>
             </Reveal>
-            <SectionDivider />
+            {sectionIndex === 0 && <HomePromoBanners />}
           </div>
         )
       })}

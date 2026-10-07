@@ -34,22 +34,17 @@ function MenuItemLink({ item, isActive, onClick, variant, isOpen = false }) {
 
   const linkClass = isMobile ? mobileLinkClass : desktopLinkClass
 
-  const linkStyle =
-    isActive || isOpen
-      ? {
-          backgroundColor: NAV_COLORS.activeBg,
-          color: NAV_COLORS.activeText,
-        }
-      : {
-          color: isHighlighted ? NAV_COLORS.highlight : NAV_COLORS.bottomText,
-        }
+  // الديسكتوب: شريط كحلي ونص أبيض — الموبايل: لوحة فاتحة ونص غامق
+  const linkStyle = isMobile
+    ? isActive || isOpen
+      ? { backgroundColor: NAV_COLORS.activeBg, color: NAV_COLORS.activeText }
+      : { color: isHighlighted ? NAV_COLORS.highlight : NAV_COLORS.bottomText }
+    : isActive || isOpen
+      ? { backgroundColor: 'rgba(255,255,255,0.14)', color: '#FFFFFF' }
+      : { color: isHighlighted ? '#FDBA74' : 'rgba(255,255,255,0.92)' }
 
   const hoverClass =
-    isMobile || isActive || isOpen
-      ? ''
-      : isHighlighted
-        ? 'hover:bg-orange-50'
-        : 'hover:bg-white hover:shadow-sm'
+    isMobile || isActive || isOpen ? '' : 'hover:bg-white/10'
 
   const content = (
     <>
@@ -327,7 +322,7 @@ export default function NavbarMenu({
 
   return (
     <div className="relative" onMouseLeave={() => setOpenIndex(null)}>
-      <div className="flex items-center justify-center gap-1 min-h-[58px] text-sm flex-wrap">
+      <div className="flex items-center justify-start gap-1 min-h-[50px] text-sm flex-wrap">
         {menuContent}
       </div>
     </div>

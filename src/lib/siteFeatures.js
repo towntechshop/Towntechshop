@@ -17,6 +17,8 @@ export const DEFAULT_SITE_FEATURES = {
   home_category_grid_enabled: true,
   home_category_grid_title: 'تسوق حسب القسم',
   home_intro_enabled: true,
+  home_banners_enabled: true,
+  home_banners: [], // [{ image_url, link, alt }] لحد 3 بانرات
 
   // شريط الإعلان أعلى الموقع
   announcement_enabled: false,
@@ -49,6 +51,10 @@ export function getSiteFeatures(settings) {
     raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}
 
   const merged = { ...DEFAULT_SITE_FEATURES, ...stored }
+
+  if (!Array.isArray(merged.home_banners)) {
+    merged.home_banners = []
+  }
 
   if (!Array.isArray(merged.trust_badges)) {
     merged.trust_badges = DEFAULT_TRUST_BADGES

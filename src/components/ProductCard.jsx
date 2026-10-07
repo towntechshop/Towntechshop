@@ -11,107 +11,67 @@ import useSiteSettings from '../hooks/useSiteSettings'
 
 const BRAND_PRIMARY = '#0B1F3A'
 
+function CartIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="20" r="1.4" />
+      <circle cx="18" cy="20" r="1.4" />
+      <path d="M2.5 3.5h2.6l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2l1.6-6.8H6.2" />
+    </svg>
+  )
+}
+
+// كارت المنتج (نفس الشكل في الرئيسية وصفحة المنتجات والمنتجات المشابهة)
 export default function ProductCard({
   product,
   added = false,
   onAddToCart,
   className = '',
-  variant = 'grid',
 }) {
+  const { features } = useSiteSettings()
   const price = getProductPrice(product)
   const regularPrice = getRegularPrice(product)
   const sale = hasSale(product)
   const saved = getSavedAmount(product)
   const inStock = isProductInStock(product)
-  const { features } = useSiteSettings()
-  const savedPercent =
-    sale && regularPrice > 0 ? Math.round((saved / regularPrice) * 100) : 0
+  const savedPercent = sale && regularPrice > 0 ? Math.round((saved / regularPrice) * 100) : 0
+
   const discountLabel =
     features.discount_badge_style === 'percent'
       ? `خصم ${savedPercent}%`
-      : variant === 'category'
-        ? `وفر ${formatPrice(saved)} جنيه`
-        : `-${formatPrice(saved)}`
-
-  const isCarousel = variant === 'carousel' || variant === 'carousel-fill'
-  const isFill = variant === 'carousel-fill'
-  const isCategory = variant === 'category'
-
-  const imageBoxClass = isFill
-    ? 'aspect-square w-full rounded-xl'
-    : isCarousel
-      ? 'aspect-square rounded-xl'
-      : isCategory
-        ? 'aspect-square rounded-xl'
-        : 'aspect-square rounded-lg sm:rounded-xl'
+      : `وفّر ${formatPrice(saved)}`
 
   return (
     <article
-      className={`group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-sky-200/70 hover:-translate-y-0.5 transition-all duration-300 text-right h-full flex flex-col ${
-        isFill
-          ? 'p-3 sm:p-4'
-          : isCategory
-            ? 'p-3 sm:p-4 border-slate-100'
-            : isCarousel
-              ? 'p-3 sm:p-3.5'
-              : 'p-2 sm:p-2.5 md:p-3.5'
-      } ${className}`}
+      className={`group h-full flex flex-col bg-white rounded-lg border border-slate-200 p-2.5 sm:p-3 text-right transition duration-300 hover:border-[#0B1F3A]/25 hover:shadow-[0_14px_30px_-18px_rgba(11,31,58,0.45)] ${className}`}
     >
-      <div className="relative mb-2">
-        {sale && inStock && (
-          <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm leading-none">
-            {discountLabel}
+      <Link
+        to={`/products/${product.id}`}
+        className="relative block aspect-square rounded-md bg-[#F5F7FA] overflow-hidden"
+      >
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.title}
+            loading="lazy"
+            className="w-full h-full object-contain mix-blend-multiply p-2 sm:p-3 transition duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <span className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">
+            بدون صورة
           </span>
         )}
 
         {!inStock && (
-          <span className="absolute top-2 right-2 z-10 bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-lg">
-            نفذ
+          <span className="absolute inset-x-0 bottom-0 bg-slate-900/80 text-white text-center text-xs font-bold py-1.5">
+            نفذت الكمية
           </span>
         )}
+      </Link>
 
-        <Link
-          to={`/products/${product.id}`}
-          className={`block bg-[#F5F7FA] overflow-hidden ${imageBoxClass}`}
-        >
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.title}
-              className="w-full h-full object-contain mix-blend-multiply p-1.5 sm:p-2.5 transition duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">
-              بدون صورة
-            </div>
-          )}
-        </Link>
-      </div>
-
-      {(product.brand || product.sku) && !isFill && (
-        <p
-          className={`uppercase tracking-wide font-black truncate mb-0.5 ${
-            isCategory
-              ? 'text-[11px] text-slate-400'
-              : 'text-[10px] text-sky-700/90'
-          }`}
-        >
-          {product.brand || product.sku}
-        </p>
-      )}
-
-      <Link to={`/products/${product.id}`} className="flex-1">
+      <Link to={`/products/${product.id}`} className="mt-2.5 block">
         <h3
-          className={`text-slate-800 font-black hover:text-sky-700 transition leading-snug ${
-            isFill
-              ? 'text-sm sm:text-[15px] min-h-[42px] sm:min-h-[46px]'
-              : isCategory
-                ? 'text-sm sm:text-[15px] min-h-[44px]'
-                : isCarousel
-                  ? 'text-[13px] sm:text-[14px] md:text-[15px] min-h-[40px] sm:min-h-[44px]'
-                  : 'text-[11px] sm:text-[13px] md:text-[14px] min-h-[32px] sm:min-h-[40px]'
-          }`}
+          className="text-[13px] sm:text-sm font-semibold text-slate-800 leading-[1.55] min-h-[2.6rem] group-hover:text-[#0B1F3A] transition"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -123,39 +83,26 @@ export default function ProductCard({
         </h3>
       </Link>
 
-      <div className={`${isCarousel ? 'mt-2' : 'mt-1.5 sm:mt-2'}`}>
-        {sale && (
-          <p className="text-xs text-slate-400 line-through font-bold leading-tight">
-            {formatPrice(regularPrice)} جنيه
-          </p>
-        )}
-        <p
-          className={`font-black leading-tight ${
-            sale && isCategory ? 'text-red-600' : 'text-slate-900'
-          } ${
-            isFill
-              ? 'text-lg sm:text-xl'
-              : isCategory
-                ? 'text-lg sm:text-xl'
-                : isCarousel
-                  ? 'text-base sm:text-lg md:text-xl'
-                  : 'text-sm sm:text-base md:text-lg'
-          }`}
-        >
-          {formatPrice(price)}{' '}
-          <span className="text-xs font-bold text-slate-500">جنيه</span>
+      {(product.brand || product.sku) && (
+        <p className="mt-1 text-[11px] text-slate-400 truncate" dir="auto">
+          {product.brand || product.sku}
         </p>
-      </div>
+      )}
 
-      <div className="mt-1.5 flex items-center justify-start gap-1.5 text-xs font-black">
-        <span
-          className={`w-2 h-2 rounded-full flex-shrink-0 ${
-            inStock ? 'bg-green-600' : 'bg-red-600'
-          }`}
-        />
-        <span className={inStock ? 'text-green-700' : 'text-red-700'}>
-          {inStock ? 'متوفر' : 'نفذ'}
-        </span>
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <p className="text-base sm:text-lg font-bold text-[#0B1F3A] leading-none">
+          {formatPrice(price)} <span className="text-xs font-semibold text-slate-500">جنيه</span>
+        </p>
+        {sale && (
+          <>
+            <span className="text-xs text-slate-400 line-through leading-none">
+              {formatPrice(regularPrice)}
+            </span>
+            <span className="text-[10px] sm:text-[11px] font-bold text-[#D7262E] bg-red-50 px-1.5 py-0.5 rounded leading-none">
+              {discountLabel}
+            </span>
+          </>
+        )}
       </div>
 
       <div className="mt-auto pt-3">
@@ -164,20 +111,15 @@ export default function ProductCard({
             key={added ? 'added' : 'idle'}
             type="button"
             onClick={() => onAddToCart?.(product)}
-            className="added-pop w-full text-white rounded-xl py-2.5 font-black text-xs sm:text-sm transition hover:opacity-90 active:scale-[0.98]"
+            className="added-pop w-full flex items-center justify-center gap-2 text-white rounded-md py-2.5 font-bold text-xs sm:text-sm transition hover:brightness-125 active:scale-[0.98]"
             style={{ backgroundColor: BRAND_PRIMARY }}
           >
             {added ? (
-              'تم ✓'
-            ) : isFill ? (
-              <>
-                <span className="md:hidden">أضف للسلة</span>
-                <span className="hidden md:inline">إضافة إلى عربة التسوق</span>
-              </>
+              'تمت الإضافة ✓'
             ) : (
               <>
-                <span className="sm:hidden">أضف للسلة</span>
-                <span className="hidden sm:inline">إضافة إلى عربة التسوق</span>
+                <CartIcon />
+                أضف للسلة
               </>
             )}
           </button>
@@ -185,7 +127,7 @@ export default function ProductCard({
           <button
             type="button"
             disabled
-            className="w-full bg-slate-100 text-slate-400 rounded-xl py-2.5 font-black text-xs sm:text-sm cursor-not-allowed"
+            className="w-full bg-slate-100 text-slate-400 rounded-md py-2.5 font-bold text-xs sm:text-sm cursor-not-allowed"
           >
             غير متوفر
           </button>

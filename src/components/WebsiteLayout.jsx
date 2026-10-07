@@ -4,6 +4,7 @@ import Footer from './Footer'
 import ScrollToTop from './ScrollToTop'
 import SeoHead from './SeoHead'
 import { AnnouncementBar, FloatingWhatsAppButton } from './SiteExtras'
+import BackToTop from './BackToTop'
 
 export default function WebsiteLayout() {
   return (
@@ -19,6 +20,7 @@ export default function WebsiteLayout() {
 
       <Footer />
       <FloatingWhatsAppButton />
+      <BackToTop />
     </div>
   )
 }

@@ -162,5 +162,5 @@ export default function useEnrichedNavbarMenuItems(menuItems = []) {
     })
   }, [menuItems, categories, categoriesById, hideEmpty])
 
-  return { enrichedItems, categoriesLoaded: categories.length > 0 }
+  return { enrichedItems, categories, categoriesLoaded: categories.length > 0 }
 }

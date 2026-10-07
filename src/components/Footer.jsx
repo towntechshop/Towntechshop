@@ -136,6 +136,13 @@ export default function Footer() {
   }
 
   const contactEmail = settings.email || STORE_EMAIL
+
+  const paymentMethods = [
+    'الدفع عند الاستلام',
+    settings.paymob_enabled ? 'فيزا / ماستركارد' : null,
+    settings.enable_vodafone_cash ? 'فودافون كاش' : null,
+    settings.enable_instapay ? 'إنستا باي' : null,
+  ].filter(Boolean)
   const whatsappNumber = settings.whatsapp || '201112826999'
 
   const popularSearchLinks = POPULAR_SEARCHES.map((term) => (
@@ -247,7 +254,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="w-full md:w-auto flex-shrink-0 h-12 px-8 rounded-full bg-[#1E6BB8] md:bg-[#FACC15] text-white md:text-slate-900 font-black hover:opacity-90 md:hover:bg-[#FDE047] transition text-sm md:text-base"
+                className="w-full md:w-auto flex-shrink-0 h-12 px-8 rounded-full bg-[#1D4ED8] text-white font-black hover:bg-[#1E40AF] transition text-sm md:text-base"
               >
                 {subscribed ? 'تم ✓' : 'إشترك'}
               </button>
@@ -329,6 +336,20 @@ export default function Footer() {
                 </div>
               </div>
             )}
+
+            <div className="text-right md:text-center">
+              <p className="text-sm font-black text-white/80 mb-3">طرق الدفع</p>
+              <ul className="flex flex-wrap gap-2 justify-start md:justify-center">
+                {paymentMethods.map((method) => (
+                  <li
+                    key={method}
+                    className="bg-white text-[#0B1F3A] text-xs font-bold px-3 py-1.5 rounded-md"
+                  >
+                    {method}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <div className="text-right">
               <p className="text-sm md:text-base font-black text-white/90">

@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { DEFAULT_TRUST_BADGES, getSiteFeatures } from '../../lib/siteFeatures'
+import { uploadSiteAsset } from '../../lib/uploadSiteAsset'
 import { Field, SectionTitle } from './AdminFormFields'
 
 const inputClass =
@@ -37,6 +39,91 @@ function Group({ title, children }) {
     <div className="border-t border-slate-100 pt-5 mt-5 first:border-t-0 first:pt-0 first:mt-0">
       <h3 className="font-black text-slate-950 mb-3">{title}</h3>
       <div className="space-y-4">{children}</div>
+    </div>
+  )
+}
+
+function PromoBannersEditor({ banners, onChange }) {
+  const [uploadingIndex, setUploadingIndex] = useState(null)
+  const [error, setError] = useState('')
+
+  const updateBanner = (index, patch) => {
+    onChange(banners.map((banner, i) => (i === index ? { ...banner, ...patch } : banner)))
+  }
+
+  const handleUpload = async (index, file) => {
+    if (!file) return
+    setError('')
+    setUploadingIndex(index)
+
+    try {
+      const url = await uploadSiteAsset(file, 'home-banners')
+      if (index === banners.length) {
+        onChange([...banners, { image_url: url, link: '', alt: '' }])
+      } else {
+        updateBanner(index, { image_url: url })
+      }
+    } catch (uploadError) {
+      setError(uploadError.message || 'تعذر رفع الصورة')
+    } finally {
+      setUploadingIndex(null)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {banners.map((banner, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-1 md:grid-cols-[200px_1fr_auto] gap-3 items-center rounded-2xl border border-slate-200 p-3"
+        >
+          <label className="relative block aspect-[16/7] rounded-xl overflow-hidden bg-slate-100 cursor-pointer">
+            {banner.image_url && (
+              <img src={banner.image_url} alt="" className="w-full h-full object-cover" />
+            )}
+            <span className="absolute inset-x-0 bottom-0 bg-slate-950/60 text-white text-xs font-black text-center py-1">
+              {uploadingIndex === index ? 'جاري الرفع...' : 'تغيير الصورة'}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => handleUpload(index, event.target.files?.[0])}
+            />
+          </label>
+          <Field label="الرابط عند الضغط" hint="مثال: /products أو /category/cameras">
+            <input
+              type="text"
+              value={banner.link || ''}
+              onChange={(event) => updateBanner(index, { link: event.target.value })}
+              placeholder="/products"
+              className={`${inputClass} text-left`}
+              dir="ltr"
+            />
+          </Field>
+          <button
+            type="button"
+            onClick={() => onChange(banners.filter((_, i) => i !== index))}
+            className="bg-red-50 text-red-700 px-4 py-3 rounded-2xl font-black hover:bg-red-100 transition"
+          >
+            حذف
+          </button>
+        </div>
+      ))}
+
+      {banners.length < 3 && (
+        <label className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 p-5 font-black text-slate-700 cursor-pointer hover:border-slate-500 transition">
+          {uploadingIndex === banners.length ? 'جاري رفع الصورة...' : '+ إضافة بانر (المقاس المناسب 1600×700)'}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => handleUpload(banners.length, event.target.files?.[0])}
+          />
+        </label>
+      )}
+
+      {error && <p className="text-sm font-bold text-red-600">{error}</p>}
     </div>
   )
 }
@@ -105,6 +192,12 @@ export default function SiteFeaturesSection({ value, onChange }) {
             onChange={(checked) => update('home_intro_enabled', checked)}
             title="نبذة عن المتجر في الصفحة الرئيسية"
           />
+          <Toggle
+            checked={features.home_banners_enabled}
+            onChange={(checked) => update('home_banners_enabled', checked)}
+            title="بانرات العروض تحت أول قسم منتجات"
+            description="لحد 3 بانرات جنب بعض، كل واحد بلينك."
+          />
           <Field label="عنوان شبكة الأقسام">
             <input
               type="text"
@@ -114,6 +207,13 @@ export default function SiteFeaturesSection({ value, onChange }) {
             />
           </Field>
         </div>
+      </Group>
+
+      <Group title="بانرات العروض في الصفحة الرئيسية">
+        <PromoBannersEditor
+          banners={features.home_banners}
+          onChange={(banners) => update('home_banners', banners)}
+        />
       </Group>
 
       <Group title="شريط الإعلان أعلى الموقع">

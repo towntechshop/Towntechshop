@@ -6,6 +6,7 @@ import { getCustomerOrders } from '../lib/customerOrders'
 import NavbarMenu, { PrimaryNavLinks } from './NavbarMenu'
 import useEnrichedNavbarMenuItems from '../hooks/useEnrichedNavbarMenuItems'
 import { NAV_COLORS } from '../lib/navbarConstants'
+import AllCategoriesMenu from './AllCategoriesMenu'
 
 const POPULAR_SEARCHES = [
   'كاميرات المراقبة',
@@ -33,11 +34,11 @@ const COLORS = {
 
 function CategoryMenuSkeleton() {
   return (
-    <div className="flex items-center justify-center gap-3 min-h-[58px] py-2">
+    <div className="flex items-center justify-start gap-3 min-h-[50px] py-2">
       {[1, 2, 3, 4, 5].map((item) => (
         <div
           key={item}
-          className="hidden sm:block h-4 rounded-full bg-slate-200/80 animate-pulse"
+          className="hidden sm:block h-4 rounded-full bg-white/15 animate-pulse"
           style={{ width: `${72 + item * 8}px` }}
         />
       ))}
@@ -165,7 +166,7 @@ export default function Navbar() {
     ? settings.navbar_menu_items || []
     : []
 
-  const { enrichedItems } = useEnrichedNavbarMenuItems(menuItems)
+  const { enrichedItems, categories: menuCategories } = useEnrichedNavbarMenuItems(menuItems)
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
@@ -486,23 +487,20 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div
-        className="hidden md:block border-b"
-        style={{
-          backgroundColor: COLORS.bottomBg,
-          borderColor: '#D8E8F6',
-        }}
-      >
-        <div className="max-w-[1500px] mx-auto px-6">
-          {menuReady ? (
-            <NavbarMenu
-              items={enrichedItems}
-              variant="desktop"
-              isMenuItemActive={isMenuItemActive}
-            />
-          ) : (
-            <CategoryMenuSkeleton />
-          )}
+      <div className="hidden md:block bg-[#0F2A4A] border-t border-white/5">
+        <div className="max-w-[1500px] mx-auto px-6 flex items-stretch gap-4">
+          <AllCategoriesMenu categories={menuCategories} />
+          <div className="flex-1 min-w-0">
+            {menuReady ? (
+              <NavbarMenu
+                items={enrichedItems}
+                variant="desktop"
+                isMenuItemActive={isMenuItemActive}
+              />
+            ) : (
+              <CategoryMenuSkeleton />
+            )}
+          </div>
         </div>
       </div>
 
