@@ -8,6 +8,8 @@ import ProductCarousel from '../components/ProductCarousel'
 import HomeProductSection from '../components/HomeProductSection'
 import HomeOurWorkSection from '../components/HomeOurWorkSection'
 import HomeDesignBlock from '../components/HomeDesignBlock'
+import HomeCategoryGrid from '../components/HomeCategoryGrid'
+import { TrustBadgesStrip } from '../components/TrustBadges'
 import { addToCart } from '../lib/cart'
 import { RETURN_POLICY_SUMMARY, STORE_SEO_DESCRIPTION_LINES } from '../lib/siteContent'
 import { getCategoryPath } from '../lib/categoryUrls'
@@ -301,6 +303,45 @@ export default function Home() {
   }, [])
 
   const heroImageUrl = settings?.hero_image_url || ''
+  const { features } = useSiteSettings()
+
+  // مربعات (تسوق حسب القسم): كل قسم فيه منتجات ظاهرة
+  const categoryTiles = useMemo(() => {
+    const counts = {}
+    allProducts.forEach((product) => {
+      counts[product.category_id] = (counts[product.category_id] || 0) + 1
+    })
+
+    const tiles = []
+
+    categories.forEach((parent) => {
+      const subcategories = (parent.subcategories || []).filter(
+        (subcategory) => subcategory.is_active && counts[subcategory.id]
+      )
+
+      subcategories.forEach((subcategory) => {
+        tiles.push({
+          id: subcategory.id,
+          name: subcategory.name,
+          count: counts[subcategory.id],
+          image: subcategory.image_url || categoryImages[subcategory.id] || '',
+          to: getCategoryPath(parent, subcategory),
+        })
+      })
+
+      if (!subcategories.length && counts[parent.id]) {
+        tiles.push({
+          id: parent.id,
+          name: parent.name,
+          count: counts[parent.id],
+          image: parent.image_url || categoryImages[parent.id] || '',
+          to: getCategoryPath(parent),
+        })
+      }
+    })
+
+    return tiles.sort((a, b) => b.count - a.count).slice(0, 12)
+  }, [allProducts, categories, categoryImages])
 
   const handleAddToCart = (product) => {
     if (product?.is_in_stock === false) return
@@ -471,19 +512,31 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 py-6 md:py-8">
-        <div className="max-w-[980px] mx-auto text-center">
-          <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
-          {STORE_SEO_DESCRIPTION_LINES.map((line) => (
-            <p
-              key={line}
-              className="text-slate-600 font-bold text-sm md:text-base leading-8"
-            >
-              {line}
-            </p>
-          ))}
-        </div>
-      </section>
+      <TrustBadgesStrip />
+
+      <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
+
+      {features.home_category_grid_enabled && categoryTiles.length >= 2 && (
+        <HomeCategoryGrid
+          title={features.home_category_grid_title || 'تسوق حسب القسم'}
+          tiles={categoryTiles}
+        />
+      )}
+
+      {features.home_intro_enabled && (
+        <section className="px-4 py-5 md:py-7">
+          <div className="max-w-[760px] mx-auto text-center">
+            {STORE_SEO_DESCRIPTION_LINES.map((line) => (
+              <p
+                key={line}
+                className="text-slate-600 text-[15px] md:text-[17px] leading-8 md:leading-9"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
 
       <SectionDivider />
 

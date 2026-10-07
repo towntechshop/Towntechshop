@@ -86,6 +86,36 @@ export default function SiteFeaturesSection({ value, onChange }) {
         />
       </Group>
 
+      <Group title="الصفحة الرئيسية">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Toggle
+            checked={features.home_trust_strip_enabled}
+            onChange={(checked) => update('home_trust_strip_enabled', checked)}
+            title="شريط مميزات المتجر تحت البانر"
+            description="بيعرض نفس (مميزات المتجر) اللي تحت في الصفحة دي."
+          />
+          <Toggle
+            checked={features.home_category_grid_enabled}
+            onChange={(checked) => update('home_category_grid_enabled', checked)}
+            title="شبكة الأقسام (تسوق حسب القسم)"
+            description="كل قسم فيه منتجات بيظهر كمربع بصورة وعدد المنتجات."
+          />
+          <Toggle
+            checked={features.home_intro_enabled}
+            onChange={(checked) => update('home_intro_enabled', checked)}
+            title="نبذة عن المتجر في الصفحة الرئيسية"
+          />
+          <Field label="عنوان شبكة الأقسام">
+            <input
+              type="text"
+              value={features.home_category_grid_title}
+              onChange={(event) => update('home_category_grid_title', event.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      </Group>
+
       <Group title="شريط الإعلان أعلى الموقع">
         <Toggle
           checked={features.announcement_enabled}

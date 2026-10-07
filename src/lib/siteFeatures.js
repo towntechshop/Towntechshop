@@ -12,6 +12,12 @@ export const DEFAULT_SITE_FEATURES = {
   // الأقسام
   hide_empty_categories: true,
 
+  // الصفحة الرئيسية
+  home_trust_strip_enabled: true,
+  home_category_grid_enabled: true,
+  home_category_grid_title: 'تسوق حسب القسم',
+  home_intro_enabled: true,
+
   // شريط الإعلان أعلى الموقع
   announcement_enabled: false,
   announcement_text: '',
