@@ -211,3 +211,19 @@ body {
 .added-pop {
   animation: added-pop 0.35s ease-out;
 }
+
+/* دوائر الأقسام: بتظهر واحدة ورا التانية أول ما الصفحة تفتح */
+@keyframes category-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.category-pop-in {
+  animation: category-pop-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
