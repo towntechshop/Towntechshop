@@ -147,10 +147,20 @@ export default function useEnrichedNavbarMenuItems(menuItems = []) {
     return map
   }, [categories])
 
-  const enrichedItems = useMemo(
-    () => enrichNavbarMenuItems(menuItems, categories, categoriesById),
-    [menuItems, categories, categoriesById]
-  )
+  const enrichedItems = useMemo(() => {
+    const items = enrichNavbarMenuItems(menuItems, categories, categoriesById)
+
+    if (!hideEmpty || categories.length === 0) return items
+
+    // روابط النافبار اللي بتودّي لقسم فاضي (مخفي) بتتشال
+    return items.filter((item) => {
+      const pointsToCategory =
+        parseCategorySlugFromUrl(item.url) ||
+        parseLegacyCategoryIdFromUrl(item.url)?.categoryId
+
+      return !pointsToCategory || Boolean(item.categoryId)
+    })
+  }, [menuItems, categories, categoriesById, hideEmpty])
 
   return { enrichedItems, categoriesLoaded: categories.length > 0 }
 }

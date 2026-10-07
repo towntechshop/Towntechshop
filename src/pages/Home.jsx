@@ -324,7 +324,7 @@ export default function Home() {
           id: subcategory.id,
           name: subcategory.name,
           count: counts[subcategory.id],
-          image: subcategory.image_url || categoryImages[subcategory.id] || '',
+          image: categoryImages[subcategory.id] || subcategory.image_url || '',
           to: getCategoryPath(parent, subcategory),
         })
       })
@@ -334,7 +334,7 @@ export default function Home() {
           id: parent.id,
           name: parent.name,
           count: counts[parent.id],
-          image: parent.image_url || categoryImages[parent.id] || '',
+          image: categoryImages[parent.id] || parent.image_url || '',
           to: getCategoryPath(parent),
         })
       }
