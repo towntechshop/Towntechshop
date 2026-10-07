@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Reveal from './Reveal'
+import { BadgeIcon } from './TrustBadges'
 
 function CheckIcon() {
   return (
@@ -132,26 +134,28 @@ function SecurityBanner({ linkUrl, imageUrl }) {
 
 function TrustStrip() {
   const items = [
-    { title: 'شحن سريع', desc: 'توصيل آمن لباب البيت' },
-    { title: 'ضمان أصلي', desc: 'منتجات موثوقة 100%' },
-    { title: 'دعم فني', desc: 'مساعدة قبل وبعد البيع' },
+    { icon: 'truck', title: 'شحن سريع', desc: 'توصيل آمن لباب البيت' },
+    { icon: 'shield', title: 'ضمان أصلي', desc: 'منتجات موثوقة 100%' },
+    { icon: 'support', title: 'دعم فني', desc: 'مساعدة قبل وبعد البيع' },
   ]
 
   return (
     <section className="px-4 py-4 md:py-5">
       <div className="max-w-[1500px] mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-          {items.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl bg-white border border-slate-200 shadow-sm px-5 py-4 md:py-5 text-right"
-            >
-              <div className="w-10 h-1 rounded-full bg-[#38BDF8] mb-3" />
-              <h4 className="text-base md:text-lg font-black text-slate-900">
-                {item.title}
-              </h4>
-              <p className="text-slate-500 font-bold text-sm mt-1">{item.desc}</p>
-            </div>
+        <div className="grid grid-cols-3 rounded-3xl bg-white border border-slate-200 shadow-[0_18px_40px_-30px_rgba(11,31,58,0.5)] divide-x divide-x-reverse divide-slate-100 overflow-hidden">
+          {items.map((item, index) => (
+            <Reveal key={item.title} delay={index * 120}>
+              <div className="group relative h-full flex flex-col sm:flex-row items-center gap-2.5 sm:gap-4 px-2 py-4 sm:px-6 sm:py-5 text-center sm:text-right transition-colors duration-300 hover:bg-[#F5F8FF]">
+                <span className="flex-shrink-0 flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#0B1F3A] to-[#1D4ED8] text-white shadow-[0_12px_24px_-12px_rgba(29,78,216,0.9)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-8deg]">
+                  <BadgeIcon name={item.icon} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] sm:text-base md:text-lg font-bold text-[#0B1F3A] leading-tight">{item.title}</span>
+                  <span className="block mt-1 text-slate-500 text-[11px] sm:text-sm leading-5">{item.desc}</span>
+                </span>
+                <span aria-hidden="true" className="absolute bottom-0 inset-x-6 h-[3px] rounded-full bg-gradient-to-l from-[#1D4ED8] to-[#38BDF8] scale-x-0 transition-transform duration-500 group-hover:scale-x-100" />
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>
