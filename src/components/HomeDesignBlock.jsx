@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function CheckIcon() {
@@ -37,6 +38,8 @@ function CameraArt() {
 const BANNER_POINTS = ['جودة Full HD و 4K', 'رؤية ليلية واضحة', 'متابعة من الموبايل']
 
 function SecurityBanner({ linkUrl, imageUrl }) {
+  const [imageFailed, setImageFailed] = useState(false)
+
   return (
     <section className="px-4 py-4 md:py-6">
       <div className="max-w-[1500px] mx-auto">
@@ -97,8 +100,8 @@ function SecurityBanner({ linkUrl, imageUrl }) {
                 <span className="sec-ping sec-ping--late absolute bottom-[26%] right-[18%] w-2 h-2 rounded-full bg-[#38BDF8]" />
 
                 <div className="sec-float absolute inset-[24%] rounded-[28px] bg-white p-3 md:p-4 shadow-[0_30px_50px_-20px_rgba(0,0,0,0.7)] transition duration-500 group-hover:scale-105">
-                  {imageUrl ? (
-                    <img src={imageUrl} alt="" loading="lazy" className="w-full h-full object-contain" />
+                  {imageUrl && !imageFailed ? (
+                    <img src={imageUrl} alt="" loading="lazy" onError={() => setImageFailed(true)} className="w-full h-full object-contain" />
                   ) : (
                     <CameraArt />
                   )}

@@ -449,7 +449,7 @@ export default function Home() {
         ? getCategoryPath(surveillanceParent, camerasSub)
         : '/products',
       imageUrl:
-        camerasSub?.image_url || categoryImages[camerasSub?.id] || '',
+        categoryImages[camerasSub?.id] || camerasSub?.image_url || '',
     })
 
     pushSection(
