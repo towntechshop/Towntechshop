@@ -128,6 +128,79 @@ function PromoBannersEditor({ banners, onChange }) {
   )
 }
 
+const PAYMENT_LOGO_FIELDS = [
+  { id: 'cash_on_delivery', label: 'الدفع عند الاستلام' },
+  { id: 'paymob', label: 'فيزا / ماستركارد (Paymob)' },
+  { id: 'vodafone_cash', label: 'فودافون كاش' },
+  { id: 'instapay', label: 'إنستا باي' },
+]
+
+function PaymentLogosEditor({ logos, onChange }) {
+  const [uploadingId, setUploadingId] = useState(null)
+  const [error, setError] = useState('')
+
+  const handleUpload = async (id, file) => {
+    if (!file) return
+    setError('')
+    setUploadingId(id)
+
+    try {
+      const url = await uploadSiteAsset(file, 'payment-logos')
+      onChange({ ...logos, [id]: url })
+    } catch (uploadError) {
+      setError(uploadError.message || 'تعذر رفع الصورة')
+    } finally {
+      setUploadingId(null)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {PAYMENT_LOGO_FIELDS.map((field) => (
+          <div key={field.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 p-3">
+            <span className="w-20 h-12 flex-shrink-0 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden">
+              {logos[field.id] ? (
+                <img src={logos[field.id]} alt="" className="max-w-full max-h-full object-contain p-1" />
+              ) : (
+                <span className="text-[11px] text-slate-400 font-bold">أيقونة</span>
+              )}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-slate-900 text-sm truncate">{field.label}</p>
+              <div className="flex gap-2 mt-1.5">
+                <label className="cursor-pointer text-xs font-black text-sky-700 hover:underline">
+                  {uploadingId === field.id ? 'جاري الرفع...' : logos[field.id] ? 'تغيير الشعار' : 'رفع شعار'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(event) => handleUpload(field.id, event.target.files?.[0])}
+                  />
+                </label>
+                {logos[field.id] && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = { ...logos }
+                      delete next[field.id]
+                      onChange(next)
+                    }}
+                    className="text-xs font-black text-red-600 hover:underline"
+                  >
+                    حذف
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {error && <p className="text-sm font-bold text-red-600">{error}</p>}
+    </div>
+  )
+}
+
 export default function SiteFeaturesSection({ value, onChange }) {
   const features = getSiteFeatures({ site_features: value })
 
@@ -213,6 +286,22 @@ export default function SiteFeaturesSection({ value, onChange }) {
         <PromoBannersEditor
           banners={features.home_banners}
           onChange={(banners) => update('home_banners', banners)}
+        />
+      </Group>
+
+      <Group title="طرق الدفع">
+        <Toggle
+          checked={features.product_payment_methods_enabled}
+          onChange={(checked) => update('product_payment_methods_enabled', checked)}
+          title="إظهار طرق الدفع في صفحة المنتج"
+          description="بتظهر كمان في الفوتر وصفحة إتمام الطلب. الطرق اللي بتظهر هي المفعّلة من إعدادات الدفع بس."
+        />
+        <p className="text-sm text-slate-600 font-bold leading-7">
+          شعارات رسمية (اختياري): لو رفعت شعار طريقة دفع (زي شعار فيزا أو فودافون كاش من موقع الشركة)، بيظهر مكان الأيقونة. يفضّل صورة PNG بخلفية شفافة.
+        </p>
+        <PaymentLogosEditor
+          logos={features.payment_logos}
+          onChange={(logos) => update('payment_logos', logos)}
         />
       </Group>
 

@@ -14,10 +14,11 @@ import {
 } from '../lib/cart'
 import { saveCustomerOrder } from '../lib/customerOrders'
 import { parsePlacedOrderResult } from '../lib/orderTracking'
+import { PaymentIcon } from '../components/PaymentMethods'
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings()
+  const { settings: siteSettings, features, loading: settingsLoading } = useSiteSettings()
 
   const [items, setItems] = useState([])
 
@@ -475,7 +476,15 @@ export default function Checkout() {
                             selected ? 'bg-[#0B1F3A] text-white' : 'bg-slate-100 text-slate-600'
                           }`}
                         >
-                          <PaymentIcon name={option.icon} />
+                          {features.payment_logos?.[option.id] ? (
+                            <img
+                              src={features.payment_logos[option.id]}
+                              alt=""
+                              className="w-8 h-8 object-contain bg-white rounded"
+                            />
+                          ) : (
+                            <PaymentIcon name={option.icon} />
+                          )}
                         </span>
                         <span className="min-w-0">
                           <span className="block font-bold text-slate-900 leading-6">{option.label}</span>
@@ -641,48 +650,3 @@ export default function Checkout() {
   )
 }
 
-function PaymentIcon({ name }) {
-  const common = {
-    viewBox: '0 0 24 24',
-    className: 'w-5 h-5',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 1.8,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-    'aria-hidden': true,
-  }
-
-  if (name === 'card') {
-    return (
-      <svg {...common}>
-        <rect x="3" y="5.5" width="18" height="13" rx="2" />
-        <path d="M3 10h18M7 15h4" />
-      </svg>
-    )
-  }
-
-  if (name === 'wallet') {
-    return (
-      <svg {...common}>
-        <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-        <path d="M10.5 18.5h3" />
-      </svg>
-    )
-  }
-
-  if (name === 'bank') {
-    return (
-      <svg {...common}>
-        <path d="M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20.5h18" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg {...common}>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <circle cx="12" cy="12" r="2.5" />
-    </svg>
-  )
-}

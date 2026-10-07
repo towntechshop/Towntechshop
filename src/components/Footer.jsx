@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import useSiteSettings from '../hooks/useSiteSettings'
+import PaymentMethodsRow from './PaymentMethods'
 import {
   STORE_BRANCHES,
   STORE_EMAIL,
@@ -137,12 +138,6 @@ export default function Footer() {
 
   const contactEmail = settings.email || STORE_EMAIL
 
-  const paymentMethods = [
-    'الدفع عند الاستلام',
-    settings.paymob_enabled ? 'فيزا / ماستركارد' : null,
-    settings.enable_vodafone_cash ? 'فودافون كاش' : null,
-    settings.enable_instapay ? 'إنستا باي' : null,
-  ].filter(Boolean)
   const whatsappNumber = settings.whatsapp || '201112826999'
 
   const popularSearchLinks = POPULAR_SEARCHES.map((term) => (
@@ -339,16 +334,7 @@ export default function Footer() {
 
             <div className="text-right md:text-center">
               <p className="text-sm font-black text-white/80 mb-3">طرق الدفع</p>
-              <ul className="flex flex-wrap gap-2 justify-start md:justify-center">
-                {paymentMethods.map((method) => (
-                  <li
-                    key={method}
-                    className="bg-white text-[#0B1F3A] text-xs font-bold px-3 py-1.5 rounded-md"
-                  >
-                    {method}
-                  </li>
-                ))}
-              </ul>
+              <PaymentMethodsRow tone="dark" className="justify-start md:justify-center" />
             </div>
 
             <div className="text-right">

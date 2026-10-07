@@ -20,6 +20,10 @@ export const DEFAULT_SITE_FEATURES = {
   home_banners_enabled: true,
   home_banners: [], // [{ image_url, link, alt }] لحد 3 بانرات
 
+  // شعارات طرق الدفع الرسمية (اختياري) — لو فاضية بتظهر أيقونة
+  payment_logos: {},
+  product_payment_methods_enabled: true,
+
   // شريط الإعلان أعلى الموقع
   announcement_enabled: false,
   announcement_text: '',
@@ -51,6 +55,10 @@ export function getSiteFeatures(settings) {
     raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}
 
   const merged = { ...DEFAULT_SITE_FEATURES, ...stored }
+
+  if (!merged.payment_logos || typeof merged.payment_logos !== 'object') {
+    merged.payment_logos = {}
+  }
 
   if (!Array.isArray(merged.home_banners)) {
     merged.home_banners = []
