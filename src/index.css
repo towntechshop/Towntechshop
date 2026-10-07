@@ -277,3 +277,155 @@ body {
 .why-us-card.is-visible:hover {
   transform: translateY(-4px);
 }
+
+
+/* ===== بانر (الأمان يبدأ من كاميرا واضحة) ===== */
+.sec-gradient-text {
+  background: linear-gradient(90deg, #38bdf8, #a5f3fc, #38bdf8);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sec-text-shine 5s linear infinite;
+}
+
+@keyframes sec-text-shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.sec-radar {
+  background: conic-gradient(from 0deg, rgba(56, 189, 248, 0.35), rgba(56, 189, 248, 0) 70deg, transparent 360deg);
+  mask-image: radial-gradient(circle, #000 0, #000 69%, transparent 70%);
+  animation: sec-radar 5s linear infinite;
+}
+
+@keyframes sec-radar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sec-float {
+  animation: sec-float 5s ease-in-out infinite;
+}
+
+.sec-float--delay {
+  animation-delay: -2.5s;
+}
+
+@keyframes sec-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+.rec-blink {
+  animation: rec-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes rec-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.sec-ping {
+  animation: sec-ping 2.6s ease-out infinite;
+}
+
+.sec-ping--late {
+  animation-delay: 1.3s;
+}
+
+@keyframes sec-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(56, 189, 248, 0);
+  }
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: translateX(260%) skewX(-20deg);
+  animation: btn-shine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes btn-shine {
+  0% {
+    transform: translateX(260%) skewX(-20deg);
+  }
+  55%,
+  100% {
+    transform: translateX(-160%) skewX(-20deg);
+  }
+}
+
+/* ===== كروت (شحن / ضمان / استبدال) ===== */
+.benefit-ring {
+  opacity: 0;
+}
+
+.benefit-card:hover .benefit-ring {
+  animation: benefit-ring 1.2s ease-out infinite;
+}
+
+@keyframes benefit-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+/* ===== آراء العملاء: شريط بيتحرك لوحده ===== */
+.reviews-marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+
+.reviews-track {
+  animation: reviews-marquee var(--marquee-duration, 40s) linear infinite;
+}
+
+.reviews-marquee:hover .reviews-track,
+.reviews-marquee:active .reviews-track {
+  animation-play-state: paused;
+}
+
+@keyframes reviews-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviews-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .reviews-track {
+    animation: none;
+  }
+}

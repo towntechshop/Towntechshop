@@ -9,6 +9,7 @@ import HomeOurWorkSection from '../components/HomeOurWorkSection'
 import HomeDesignBlock from '../components/HomeDesignBlock'
 import HomeCategoryGrid from '../components/HomeCategoryGrid'
 import HomeWhyUs from '../components/HomeWhyUs'
+import HomeBenefits from '../components/HomeBenefits'
 import Reveal from '../components/Reveal'
 import HomePromoBanners from '../components/HomePromoBanners'
 import { addToCart } from '../lib/cart'
@@ -572,68 +573,7 @@ export default function Home() {
 
       <SectionDivider />
 
-      <section className="px-4 pb-2">
-        <div className="max-w-[1500px] mx-auto">
-          <div className="md:hidden flex gap-4 overflow-x-auto pb-3 px-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {benefitCards.map((card, index) => (
-              <div
-                key={index}
-                className="relative flex-shrink-0 snap-start w-[360px] h-[170px] rounded-[28px] overflow-hidden shadow-md"
-                style={{
-                  background:
-                    'linear-gradient(135deg, #0B1F3A 0%, #123D68 58%, #0B1F3A 100%)',
-                }}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_55%,rgba(56,189,248,0.24),transparent_38%)]" />
-
-                <div className="absolute left-[-28px] bottom-[-22px] w-[155px] h-[155px] opacity-95">
-                  {card.icon}
-                </div>
-
-                <div className="absolute right-0 top-0 z-10 h-full w-[62%] p-5 pr-6 flex flex-col justify-center text-white text-right">
-                  <h3 className="text-[22px] font-black leading-8">
-                    {card.title}
-                  </h3>
-
-                  <p className="text-white/78 text-[13px] leading-6 mt-2">
-                    {card.subtitle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="hidden md:grid grid-cols-3 gap-5">
-            {benefitCards.map((card, index) => (
-              <div
-                key={index}
-                className="min-h-[170px] rounded-3xl overflow-hidden relative shadow-sm hover:shadow-md transition"
-                style={{
-                  background:
-                    'linear-gradient(135deg, #0B1F3A 0%, #123D68 55%, #0B1F3A 100%)',
-                }}
-              >
-                <div className="absolute -left-10 -top-10 w-40 h-40 rounded-full bg-sky-400/20" />
-                <div className="absolute -right-12 -bottom-12 w-44 h-44 rounded-full bg-yellow-400/10" />
-
-                <div className="relative z-10 h-full flex items-center gap-5 p-6">
-                  <div className="w-32 h-32 flex-shrink-0">{card.icon}</div>
-
-                  <div className="text-white">
-                    <h3 className="text-3xl font-black leading-[1.25]">
-                      {card.title}
-                    </h3>
-
-                    <p className="text-white/75 text-base leading-7 mt-3">
-                      {card.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeBenefits cards={benefitCards} />
 
       <SectionDivider />
 
