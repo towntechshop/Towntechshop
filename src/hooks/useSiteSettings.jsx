@@ -35,12 +35,10 @@ export const defaultSettings = {
   logo_url: '',
   hero_image_url: '',
   paymob_enabled: false,
-  paymob_api_key: '',
   paymob_public_key: '',
   paymob_merchant_id: '',
   paymob_integration_id: '',
   paymob_iframe_id: '',
-  paymob_hmac_secret: '',
   enable_vodafone_cash: false,
   enable_instapay: false,
 

@@ -1,0 +1,8 @@
+project_id = "wzayjdislqyqnqsmexyq"
+
+# Paymob لا يرسل توكن Supabase، والحماية داخل الدالة عن طريق HMAC
+[functions.paymob-webhook]
+verify_jwt = false
+
+[functions.paymob-session]
+verify_jwt = true

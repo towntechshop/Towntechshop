@@ -86,6 +86,13 @@ export default function AdminSiteSettings() {
       return
     }
 
+    // المفاتيح السرية في جدول منفصل لا يقرأه إلا الأدمن
+    const { data: secrets } = await supabase
+      .from('payment_secrets')
+      .select('paymob_secret_key, paymob_hmac_secret')
+      .eq('id', 1)
+      .maybeSingle()
+
     if (data) {
       setSettings({
         brand_name: data.brand_name || '',
@@ -130,12 +137,12 @@ export default function AdminSiteSettings() {
         hero_image_url: data.hero_image_url || '',
         footer_description: data.footer_description || '',
         paymob_enabled: data.paymob_enabled || false,
-        paymob_api_key: data.paymob_api_key || '',
+        paymob_api_key: secrets?.paymob_secret_key || '',
         paymob_public_key: data.paymob_public_key || '',
         paymob_merchant_id: data.paymob_merchant_id || '',
         paymob_integration_id: data.paymob_integration_id || '',
         paymob_iframe_id: data.paymob_iframe_id || '',
-        paymob_hmac_secret: data.paymob_hmac_secret || '',
+        paymob_hmac_secret: secrets?.paymob_hmac_secret || '',
         enable_vodafone_cash: data.enable_vodafone_cash || false,
         enable_instapay: data.enable_instapay || false,
       })
@@ -362,12 +369,10 @@ export default function AdminSiteSettings() {
         hero_image_url: finalHeroImageUrl,
         footer_description: settings.footer_description,
         paymob_enabled: settings.paymob_enabled,
-        paymob_api_key: settings.paymob_api_key,
         paymob_public_key: settings.paymob_public_key,
         paymob_merchant_id: settings.paymob_merchant_id,
         paymob_integration_id: settings.paymob_integration_id,
         paymob_iframe_id: settings.paymob_iframe_id,
-        paymob_hmac_secret: settings.paymob_hmac_secret,
         enable_vodafone_cash: settings.enable_vodafone_cash,
         enable_instapay: settings.enable_instapay,
       }
@@ -378,6 +383,19 @@ export default function AdminSiteSettings() {
 
       if (error) {
         throw error
+      }
+
+      const { error: secretsError } = await supabase
+        .from('payment_secrets')
+        .upsert({
+          id: 1,
+          paymob_secret_key: String(settings.paymob_api_key || '').trim() || null,
+          paymob_hmac_secret: String(settings.paymob_hmac_secret || '').trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (secretsError) {
+        throw secretsError
       }
 
       setSettings((prev) => {
@@ -816,7 +834,7 @@ export default function AdminSiteSettings() {
                 name="paymob_integration_id"
                 value={settings.paymob_integration_id}
                 onChange={handleChange}
-                placeholder="4239389"
+                placeholder="4239389 أو أكثر من رقم مفصولين بفاصلة (كارت, محفظة)"
                 className="w-full border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-slate-950 text-left"
                 dir="ltr"
               />
@@ -1225,4 +1243,4 @@ export default function AdminSiteSettings() {
       </form>
     </div>
   )
-}
+}

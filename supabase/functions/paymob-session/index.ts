@@ -1,13 +1,17 @@
+// إنشاء جلسة دفع Paymob (Intention API / Unified Checkout) لطلب موجود
+// المفاتيح السرية تُقرأ من Supabase Secrets أولاً، ثم من جدول payment_secrets (أدمن فقط)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-const PAYMOB_BASE_URL =
+const PAYMOB_BASE_URL = (
   Deno.env.get('PAYMOB_BASE_URL') || 'https://accept.paymob.com'
+).replace(/\/$/, '')
 
 type OrderItem = {
   product_title?: string
@@ -25,14 +29,9 @@ type OrderRecord = {
   customer_address?: string
   customer_city?: string
   total_amount?: number
+  payment_method?: string
+  payment_status?: string
   order_items?: OrderItem[]
-}
-
-type SiteSettings = {
-  paymob_enabled?: boolean
-  paymob_api_key?: string
-  paymob_public_key?: string
-  paymob_integration_id?: string
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
@@ -45,11 +44,11 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 function normalizePhone(phone: string) {
   const digits = String(phone || '').replace(/\D/g, '')
 
-  if (!digits) return '+200000000000'
+  if (!digits) return '+201000000000'
   if (digits.startsWith('20')) return `+${digits}`
   if (digits.startsWith('0')) return `+20${digits.slice(1)}`
 
-  return `+${digits}`
+  return `+20${digits}`
 }
 
 function splitName(fullName: string) {
@@ -57,21 +56,21 @@ function splitName(fullName: string) {
 
   return {
     first_name: parts[0] || 'Customer',
-    last_name: parts.slice(1).join(' ') || 'Customer',
+    last_name: parts.slice(1).join(' ') || parts[0] || 'Customer',
   }
 }
 
-async function loadPaymobConfig(
-  supabase: ReturnType<typeof createClient>,
-  requestPublicKey?: string
-) {
-  let secretKey = Deno.env.get('PAYMOB_SECRET_KEY') || ''
-  let publicKey = Deno.env.get('PAYMOB_PUBLIC_KEY') || requestPublicKey || ''
-  let integrationId = Deno.env.get('PAYMOB_INTEGRATION_ID') || ''
+function parseIntegrationIds(value: string) {
+  return String(value || '')
+    .split(/[,\s]+/)
+    .map((id) => Number(id.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0)
+}
 
+async function loadPaymobConfig(supabase: ReturnType<typeof createClient>) {
   const { data: settings, error: settingsError } = await supabase
     .from('site_settings')
-    .select('paymob_enabled, paymob_api_key, paymob_integration_id')
+    .select('paymob_enabled, paymob_public_key, paymob_integration_id')
     .eq('id', 1)
     .maybeSingle()
 
@@ -79,37 +78,27 @@ async function loadPaymobConfig(
     console.error('site_settings query failed:', settingsError)
   }
 
-  const siteSettings = (settings || {}) as SiteSettings
+  const { data: secrets, error: secretsError } = await supabase
+    .from('payment_secrets')
+    .select('paymob_secret_key')
+    .eq('id', 1)
+    .maybeSingle()
 
-  secretKey = secretKey || siteSettings.paymob_api_key || ''
-  integrationId =
-    integrationId || String(siteSettings.paymob_integration_id || '')
-
-  if (!publicKey) {
-    const { data: publicKeyRow, error: publicKeyError } = await supabase
-      .from('site_settings')
-      .select('paymob_public_key')
-      .eq('id', 1)
-      .maybeSingle()
-
-    if (publicKeyError) {
-      console.error('paymob_public_key query failed:', publicKeyError)
-    } else {
-      publicKey = publicKeyRow?.paymob_public_key || ''
-    }
+  if (secretsError) {
+    console.error('payment_secrets query failed:', secretsError)
   }
 
-  const paymobConfiguredInEnv = Boolean(
-    Deno.env.get('PAYMOB_SECRET_KEY') &&
-      (Deno.env.get('PAYMOB_PUBLIC_KEY') || requestPublicKey) &&
-      Deno.env.get('PAYMOB_INTEGRATION_ID')
-  )
-
-  if (!paymobConfiguredInEnv && !siteSettings.paymob_enabled) {
-    throw new Error('Paymob is not enabled')
+  return {
+    enabled: Boolean(settings?.paymob_enabled),
+    secretKey:
+      Deno.env.get('PAYMOB_SECRET_KEY') || secrets?.paymob_secret_key || '',
+    publicKey:
+      Deno.env.get('PAYMOB_PUBLIC_KEY') || settings?.paymob_public_key || '',
+    integrationIds: parseIntegrationIds(
+      Deno.env.get('PAYMOB_INTEGRATION_ID') ||
+        String(settings?.paymob_integration_id || '')
+    ),
   }
-
-  return { secretKey, publicKey, integrationId }
 }
 
 Deno.serve(async (req) => {
@@ -117,13 +106,16 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  try {
-    const payload = await req.json()
-    const orderId = payload?.order_id
-    const requestPublicKey = payload?.public_key
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405)
+  }
 
-    if (!orderId) {
-      return jsonResponse({ error: 'order_id is required' }, 400)
+  try {
+    const payload = await req.json().catch(() => ({}))
+    const orderId = String(payload?.order_id || '')
+
+    if (!/^[0-9a-f-]{36}$/i.test(orderId)) {
+      return jsonResponse({ error: 'رقم الطلب غير صالح.' }, 400)
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -142,63 +134,69 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (orderError || !order) {
-      return jsonResponse({ error: 'Order not found' }, 404)
+      return jsonResponse({ error: 'لم يتم العثور على الطلب.' }, 404)
     }
 
     const orderRecord = order as OrderRecord
-    const { secretKey, publicKey, integrationId } = await loadPaymobConfig(
-      supabase,
-      requestPublicKey
-    )
 
-    if (!secretKey) {
-      return jsonResponse(
-        { error: 'Paymob Secret Key غير موجود. أضفه في Supabase Secrets أو إعدادات الموقع.' },
-        500
-      )
+    if (orderRecord.payment_method !== 'paymob') {
+      return jsonResponse({ error: 'هذا الطلب ليس بالدفع الإلكتروني.' }, 400)
     }
 
-    if (!publicKey) {
-      return jsonResponse(
-        { error: 'Paymob Public Key غير موجود. أضفه في إعدادات الموقع.' },
-        500
-      )
+    if (orderRecord.payment_status === 'paid') {
+      return jsonResponse({ already_paid: true })
     }
 
-    if (!integrationId) {
+    const { enabled, secretKey, publicKey, integrationIds } =
+      await loadPaymobConfig(supabase)
+
+    if (!enabled) {
+      return jsonResponse({ error: 'الدفع الإلكتروني غير مفعّل حالياً.' }, 503)
+    }
+
+    if (!secretKey || !publicKey || integrationIds.length === 0) {
+      console.error('Paymob config incomplete', {
+        hasSecret: Boolean(secretKey),
+        hasPublic: Boolean(publicKey),
+        integrations: integrationIds.length,
+      })
       return jsonResponse(
-        { error: 'Paymob Integration ID غير موجود.' },
-        500
+        { error: 'إعدادات بوابة الدفع غير مكتملة. يرجى التواصل مع المتجر.' },
+        503
       )
     }
 
     const amountCents = Math.round(Number(orderRecord.total_amount || 0) * 100)
 
     if (amountCents <= 0) {
-      return jsonResponse({ error: 'Invalid order amount' }, 400)
+      return jsonResponse({ error: 'قيمة الطلب غير صالحة.' }, 400)
     }
 
     const { first_name, last_name } = splitName(orderRecord.customer_name || '')
     const phone = normalizePhone(orderRecord.customer_phone || '')
 
-    let items = (orderRecord.order_items || []).map((item) => ({
-      name: (item.product_title || 'Product').slice(0, 50),
-      amount: Math.round(
-        Number(
-          item.line_total ||
-            Number(item.unit_price || 0) * Number(item.quantity || 1)
-        ) * 100
-      ),
-      description: (item.product_title || 'Order item').slice(0, 100),
-      quantity: Number(item.quantity || 1),
-    }))
+    let items = (orderRecord.order_items || []).map((item) => {
+      const quantity = Math.max(Number(item.quantity || 1), 1)
+      const unitCents = Math.round(Number(item.unit_price || 0) * 100)
 
-    const itemsTotal = items.reduce((sum, item) => sum + item.amount, 0)
+      return {
+        name: (item.product_title || 'Product').slice(0, 50),
+        amount: unitCents,
+        description: (item.product_title || 'Order item').slice(0, 100),
+        quantity,
+      }
+    })
 
+    const itemsTotal = items.reduce(
+      (sum, item) => sum + item.amount * item.quantity,
+      0
+    )
+
+    // الشحن والخصم يغيّروا الإجمالي، فنرسل بند واحد بإجمالي الطلب عشان المبالغ تطابق
     if (items.length === 0 || itemsTotal !== amountCents) {
       items = [
         {
-          name: `Order ${orderRecord.order_number || orderRecord.id}`.slice(0, 50),
+          name: `Order ${orderRecord.order_number || ''}`.trim().slice(0, 50),
           amount: amountCents,
           description: 'Order total',
           quantity: 1,
@@ -206,38 +204,42 @@ Deno.serve(async (req) => {
       ]
     }
 
-    const siteUrl =
-      Deno.env.get('SITE_URL')?.replace(/\/$/, '') ||
-      req.headers.get('origin')?.replace(/\/$/, '') ||
+    const siteUrl = (
+      Deno.env.get('SITE_URL') ||
+      req.headers.get('origin') ||
       ''
+    ).replace(/\/$/, '')
 
     const redirectionUrl = siteUrl
       ? `${siteUrl}/order-success?order=${encodeURIComponent(orderRecord.id)}${
           orderRecord.order_number
             ? `&number=${encodeURIComponent(orderRecord.order_number)}`
             : ''
-        }`
+        }&method=paymob`
       : undefined
+
+    // Paymob يرفض تكرار special_reference، فنضيف توقيت لكل محاولة دفع
+    const specialReference = `${orderRecord.id}_${Date.now()}`
 
     const intentionPayload = {
       amount: amountCents,
       currency: 'EGP',
-      payment_methods: [Number(integrationId)],
+      payment_methods: integrationIds,
       items,
       billing_data: {
         first_name,
         last_name,
         phone_number: phone,
-        email: orderRecord.customer_email || 'customer@example.com',
-        street: orderRecord.customer_address || 'NA',
+        email: orderRecord.customer_email || 'customer@towntech.shop',
+        street: (orderRecord.customer_address || 'NA').slice(0, 200),
         building: 'NA',
         floor: 'NA',
         apartment: 'NA',
         city: orderRecord.customer_city || 'Cairo',
-        country: 'EGY',
+        country: 'EG',
         state: orderRecord.customer_city || 'Cairo',
       },
-      special_reference: String(orderRecord.id),
+      special_reference: specialReference,
       notification_url: `${supabaseUrl}/functions/v1/paymob-webhook`,
       redirection_url: redirectionUrl,
       extras: {
@@ -255,18 +257,16 @@ Deno.serve(async (req) => {
       body: JSON.stringify(intentionPayload),
     })
 
-    const paymobData = await paymobResponse.json()
+    const paymobData = await paymobResponse.json().catch(() => ({}))
 
     if (!paymobResponse.ok) {
-      console.error('Paymob intention error:', paymobData)
+      console.error('Paymob intention error:', paymobResponse.status, paymobData)
 
       return jsonResponse(
         {
-          error:
-            paymobData.detail ||
-            paymobData.message ||
-            'Failed to create Paymob payment session',
-          details: paymobData,
+          error: 'تعذر إنشاء جلسة الدفع من Paymob. حاول مرة أخرى أو اختر طريقة دفع أخرى.',
+          paymob_status: paymobResponse.status,
+          paymob_detail: paymobData?.detail || paymobData?.message || null,
         },
         502
       )
@@ -275,10 +275,13 @@ Deno.serve(async (req) => {
     const clientSecret = paymobData.client_secret
 
     if (!clientSecret) {
-      return jsonResponse({ error: 'Paymob did not return client_secret' }, 502)
+      console.error('Paymob response missing client_secret', paymobData)
+      return jsonResponse({ error: 'لم يتم الحصول على رابط الدفع من Paymob.' }, 502)
     }
 
-    const paymentUrl = `${PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${encodeURIComponent(publicKey)}&clientSecret=${encodeURIComponent(clientSecret)}`
+    const paymentUrl = `${PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${encodeURIComponent(
+      publicKey
+    )}&clientSecret=${encodeURIComponent(clientSecret)}`
 
     return jsonResponse({
       payment_url: paymentUrl,
@@ -287,11 +290,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('paymob-session error:', error)
 
-    return jsonResponse(
-      {
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      500
-    )
+    return jsonResponse({ error: 'حدث خطأ أثناء إنشاء جلسة الدفع.' }, 500)
   }
 })

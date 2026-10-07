@@ -1,3 +1,6 @@
+// استقبال إشعار الدفع من Paymob (Transaction processed callback)
+// يجب نشرها بدون تحقق JWT (verify_jwt = false) لأن Paymob لا يرسل توكن Supabase.
+// الحماية هنا عن طريق توقيع HMAC الإلزامي + التحقق من المبلغ.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 type TransactionObject = {
@@ -17,19 +20,31 @@ type TransactionObject = {
   is_standalone_payment?: boolean
   is_voided?: boolean
   owner?: number | string
-  order?: { id?: number | string }
+  order?: { id?: number | string; merchant_order_id?: string }
   source_data?: {
     pan?: string
     sub_type?: string
     type?: string
   }
+  payment_key_claims?: { extra?: Record<string, unknown> }
 }
+
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
 
 function toStringValue(value: unknown) {
   if (value === true) return 'true'
   if (value === false) return 'false'
   if (value === null || value === undefined) return ''
   return String(value)
+}
+
+function timingSafeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return result === 0
 }
 
 async function verifyHmac(
@@ -40,27 +55,29 @@ async function verifyHmac(
   if (!receivedHmac || !secret) return false
 
   const concatenated = [
-    toStringValue(transaction.amount_cents),
-    toStringValue(transaction.created_at),
-    toStringValue(transaction.currency),
-    toStringValue(transaction.error_occured),
-    toStringValue(transaction.has_parent_transaction),
-    toStringValue(transaction.id),
-    toStringValue(transaction.integration_id),
-    toStringValue(transaction.is_3d_secure),
-    toStringValue(transaction.is_auth),
-    toStringValue(transaction.is_capture),
-    toStringValue(transaction.is_refunded),
-    toStringValue(transaction.is_standalone_payment),
-    toStringValue(transaction.is_voided),
-    toStringValue(transaction.order?.id),
-    toStringValue(transaction.owner),
-    toStringValue(transaction.pending),
-    toStringValue(transaction.source_data?.pan),
-    toStringValue(transaction.source_data?.sub_type),
-    toStringValue(transaction.source_data?.type),
-    toStringValue(transaction.success),
-  ].join('')
+    transaction.amount_cents,
+    transaction.created_at,
+    transaction.currency,
+    transaction.error_occured,
+    transaction.has_parent_transaction,
+    transaction.id,
+    transaction.integration_id,
+    transaction.is_3d_secure,
+    transaction.is_auth,
+    transaction.is_capture,
+    transaction.is_refunded,
+    transaction.is_standalone_payment,
+    transaction.is_voided,
+    transaction.order?.id,
+    transaction.owner,
+    transaction.pending,
+    transaction.source_data?.pan,
+    transaction.source_data?.sub_type,
+    transaction.source_data?.type,
+    transaction.success,
+  ]
+    .map(toStringValue)
+    .join('')
 
   const key = await crypto.subtle.importKey(
     'raw',
@@ -80,28 +97,60 @@ async function verifyHmac(
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('')
 
-  return calculated === receivedHmac.toLowerCase()
+  return timingSafeEqual(calculated, receivedHmac.toLowerCase())
 }
 
 async function loadHmacSecret(supabase: ReturnType<typeof createClient>) {
   const envSecret = Deno.env.get('PAYMOB_HMAC_SECRET')
-
   if (envSecret) return envSecret
 
-  const { data: settings } = await supabase
-    .from('site_settings')
+  const { data } = await supabase
+    .from('payment_secrets')
     .select('paymob_hmac_secret')
-    .limit(1)
+    .eq('id', 1)
     .maybeSingle()
 
-  return settings?.paymob_hmac_secret || ''
+  return data?.paymob_hmac_secret || ''
+}
+
+function extractOrderId(body: Record<string, any>, transaction: TransactionObject) {
+  const candidates = [
+    transaction.order?.merchant_order_id,
+    body?.obj?.merchant_order_id,
+    body?.merchant_order_id,
+    transaction.payment_key_claims?.extra?.order_id,
+    body?.obj?.special_reference,
+    body?.special_reference,
+  ]
+
+  for (const candidate of candidates) {
+    const match = String(candidate || '').match(UUID_RE)
+    if (match) return match[0]
+  }
+
+  return null
 }
 
 Deno.serve(async (req) => {
+  // Paymob أحياناً يختبر الرابط بـ GET
+  if (req.method !== 'POST') {
+    return new Response('OK', { status: 200 })
+  }
+
   try {
     const url = new URL(req.url)
     const receivedHmac = url.searchParams.get('hmac') || ''
-    const body = await req.json()
+    const body = await req.json().catch(() => null)
+
+    if (!body) {
+      return new Response('Invalid body', { status: 400 })
+    }
+
+    if (body.type && body.type !== 'TRANSACTION') {
+      // إشعارات أخرى (مثل TOKEN) لا تحتاج معالجة
+      return new Response('Ignored', { status: 200 })
+    }
+
     const transaction = (body?.obj || body) as TransactionObject
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -114,49 +163,75 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey)
     const hmacSecret = await loadHmacSecret(supabase)
 
-    if (hmacSecret) {
-      const isValid = await verifyHmac(transaction, receivedHmac, hmacSecret)
-
-      if (!isValid) {
-        console.error('Invalid Paymob HMAC')
-        return new Response('Invalid HMAC', { status: 401 })
-      }
+    if (!hmacSecret) {
+      console.error('Paymob HMAC secret is not configured — rejecting callback')
+      return new Response('HMAC not configured', { status: 500 })
     }
 
-    const merchantOrderId =
-      body?.merchant_order_id ||
-      body?.obj?.merchant_order_id ||
-      body?.obj?.order?.merchant_order_id ||
-      body?.obj?.payment_key_claims?.extra?.order_id ||
-      body?.obj?.data?.merchant_order_id ||
-      body?.special_reference ||
-      body?.obj?.special_reference
+    if (!(await verifyHmac(transaction, receivedHmac, hmacSecret))) {
+      console.error('Invalid Paymob HMAC')
+      return new Response('Invalid HMAC', { status: 401 })
+    }
 
-    if (!merchantOrderId) {
+    const orderId = extractOrderId(body, transaction)
+
+    if (!orderId) {
+      console.error('Paymob callback without order id', transaction.id)
       return new Response('Missing merchant order id', { status: 400 })
     }
 
-    const paymentStatus = transaction.success
-      ? 'paid'
-      : transaction.pending
-        ? 'pending'
-        : 'failed'
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('id, total_amount, payment_status, payment_method, status')
+      .eq('id', orderId)
+      .maybeSingle()
 
-    const orderStatus = transaction.success ? 'confirmed' : undefined
+    if (orderError || !order) {
+      console.error('Order not found for Paymob callback', orderId)
+      return new Response('Order not found', { status: 404 })
+    }
+
+    if (order.payment_method !== 'paymob') {
+      return new Response('Not a Paymob order', { status: 200 })
+    }
+
+    // طلب مدفوع بالفعل: لا نغيّر حالته بسبب محاولة لاحقة فاشلة
+    if (order.payment_status === 'paid' && !transaction.is_refunded) {
+      return new Response('Already paid', { status: 200 })
+    }
+
+    const expectedCents = Math.round(Number(order.total_amount || 0) * 100)
+    const paidCents = Number(transaction.amount_cents || 0)
+
+    let paymentStatus: string
+    if (transaction.is_refunded) {
+      paymentStatus = 'refunded'
+    } else if (transaction.success && !transaction.is_voided) {
+      if (paidCents !== expectedCents || transaction.currency !== 'EGP') {
+        console.error('Paymob amount mismatch', { orderId, paidCents, expectedCents })
+        paymentStatus = 'failed'
+      } else {
+        paymentStatus = 'paid'
+      }
+    } else if (transaction.pending) {
+      paymentStatus = 'pending'
+    } else {
+      paymentStatus = 'failed'
+    }
 
     const updatePayload: Record<string, string> = {
       payment_status: paymentStatus,
+      payment_reference: String(transaction.id || ''),
     }
 
-    if (orderStatus) {
-      updatePayload.status = orderStatus
+    if (paymentStatus === 'paid' && (!order.status || order.status === 'new')) {
+      updatePayload.status = 'confirmed'
     }
 
     const { error } = await supabase
       .from('orders')
       .update(updatePayload)
-      .eq('id', merchantOrderId)
-      .eq('payment_method', 'paymob')
+      .eq('id', orderId)
 
     if (error) {
       console.error('Failed to update order:', error)

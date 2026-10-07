@@ -110,10 +110,15 @@ export default function Payment() {
         const { data, error } = await supabase.functions.invoke('paymob-session', {
           body: {
             order_id: orderId,
-            payment_method: method,
-            public_key: siteSettings.paymob_public_key,
           },
         })
+
+        if (data?.already_paid) {
+          navigate(`/order-success?order=${encodeURIComponent(orderId)}&method=paymob&success=true`, {
+            replace: true,
+          })
+          return
+        }
 
         if (error) {
           throw new Error(await readFunctionErrorMessage(error, data))
@@ -142,7 +147,7 @@ export default function Payment() {
     }
 
     createPaymentSession()
-  }, [orderId, method, siteSettings, isManualPayment, settingsLoading])
+  }, [orderId, method, siteSettings, isManualPayment, settingsLoading, navigate])
 
   useEffect(() => {
     if (!paymentUrl || method !== 'paymob' || loading || errorMessage) {
