@@ -4,7 +4,7 @@ import { getCategoryPath } from '../lib/categoryUrls'
 import { DEFAULT_NAVBAR_MENU_ITEMS } from '../lib/defaultNavbarMenuItems'
 import { writeSiteSettingsCache, clearSiteSettingsCache } from '../lib/siteSettingsCache'
 import { Field, SectionTitle } from './components/AdminFormFields'
-import SiteFeaturesSection from './components/SiteFeaturesSection'
+import { Link } from 'react-router-dom'
 
 export default function AdminSiteSettings() {
   const [settings, setSettings] = useState({
@@ -42,7 +42,6 @@ export default function AdminSiteSettings() {
     paymob_hmac_secret: '',
     enable_vodafone_cash: false,
     enable_instapay: false,
-    site_features: {},
   })
 
   const [categories, setCategories] = useState([])
@@ -147,7 +146,6 @@ export default function AdminSiteSettings() {
         paymob_hmac_secret: secrets?.paymob_hmac_secret || '',
         enable_vodafone_cash: data.enable_vodafone_cash || false,
         enable_instapay: data.enable_instapay || false,
-        site_features: data.site_features || {},
       })
     }
 
@@ -378,7 +376,6 @@ export default function AdminSiteSettings() {
         paymob_iframe_id: settings.paymob_iframe_id,
         enable_vodafone_cash: settings.enable_vodafone_cash,
         enable_instapay: settings.enable_instapay,
-        site_features: settings.site_features || {},
       }
 
       const { error } = await supabase
@@ -739,12 +736,18 @@ export default function AdminSiteSettings() {
           </div>
         </section>
 
-        <SiteFeaturesSection
-          value={settings.site_features}
-          onChange={(nextFeatures) =>
-            setSettings((prev) => ({ ...prev, site_features: nextFeatures }))
-          }
-        />
+        <Link
+          to="/admin/site-features"
+          className="flex items-center justify-between gap-4 bg-sky-50 border border-sky-200 rounded-3xl p-5 hover:bg-sky-100 transition"
+        >
+          <div>
+            <p className="font-black text-slate-950">مميزات الموقع</p>
+            <p className="text-slate-600 text-sm font-bold mt-1">
+              واتساب، شريط الإعلان، إخفاء الأقسام الفاضية، صفحة المنتج، مميزات المتجر
+            </p>
+          </div>
+          <span className="font-black text-sky-700">فتح ←</span>
+        </Link>
 
         <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 md:p-6">
           <SectionTitle

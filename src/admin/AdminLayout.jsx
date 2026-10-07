@@ -21,6 +21,7 @@ const menuItems = [
   { label: 'العملاء', path: '/admin/customers' },
   { label: 'التقارير', path: '/admin/reports' },
   { label: 'إعدادات الشحن', path: '/admin/shipping-settings' },
+  { label: 'مميزات الموقع', path: '/admin/site-features' },
   { label: 'إعدادات الموقع', path: '/admin/site-settings' },
   { label: 'الصفحات والسياسات', path: '/admin/pages' },
 ]
@@ -37,6 +38,7 @@ const pageTitles = [
   { match: '/admin/customers', title: 'العملاء' },
   { match: '/admin/reports', title: 'التقارير' },
   { match: '/admin/shipping-settings', title: 'إعدادات الشحن' },
+  { match: '/admin/site-features', title: 'مميزات الموقع' },
   { match: '/admin/site-settings', title: 'إعدادات الموقع' },
   { match: '/admin/pages', title: 'الصفحات والسياسات' },
 ]
