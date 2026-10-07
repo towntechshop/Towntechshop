@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -21,7 +21,57 @@ function getLastSeenContactMessages() {
   }
 }
 
+// صوت تنبيه بسيط (من غير ملفات) لما يوصل طلب جديد ولوحة التحكم مفتوحة
+function playNewOrderSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext
+    if (!AudioContextClass) return
+    const context = new AudioContextClass()
+    ;[0, 0.18, 0.36].forEach((offset, index) => {
+      const oscillator = context.createOscillator()
+      const gain = context.createGain()
+      oscillator.type = 'sine'
+      oscillator.frequency.value = [880, 1175, 1568][index]
+      gain.gain.setValueAtTime(0.0001, context.currentTime + offset)
+      gain.gain.exponentialRampToValueAtTime(0.25, context.currentTime + offset + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + offset + 0.16)
+      oscillator.connect(gain).connect(context.destination)
+      oscillator.start(context.currentTime + offset)
+      oscillator.stop(context.currentTime + offset + 0.18)
+    })
+  } catch {
+    // المتصفح ممكن يمنع الصوت قبل أي ضغطة من المستخدم
+  }
+}
+
+function showBrowserNotification(newCount) {
+  try {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+    const notification = new Notification('🛒 طلب جديد', {
+      body: newCount > 1 ? `وصلك ${newCount} طلبات جديدة` : 'وصلك طلب جديد على الموقع',
+      tag: 'new-order',
+    })
+    notification.onclick = () => {
+      window.focus()
+      window.location.assign('/admin/orders')
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function requestOrderNotificationPermission() {
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export default function useAdminNotifications() {
+  const previousOrdersRef = useRef(null)
   const location = useLocation()
   const [counts, setCounts] = useState({
     orders: 0,
@@ -47,8 +97,16 @@ export default function useAdminNotifications() {
         .gt('created_at', lastSeenMessages),
     ])
 
+    const ordersCount = ordersResult.count || 0
+
+    if (previousOrdersRef.current !== null && ordersCount > previousOrdersRef.current) {
+      playNewOrderSound()
+      showBrowserNotification(ordersCount - previousOrdersRef.current)
+    }
+    previousOrdersRef.current = ordersCount
+
     setCounts({
-      orders: ordersResult.count || 0,
+      orders: ordersCount,
       reviews: reviewsResult.count || 0,
       messages: messagesResult.count || 0,
     })

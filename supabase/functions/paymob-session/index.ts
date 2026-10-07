@@ -147,6 +147,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ already_paid: true })
     }
 
+    if ((order as { status?: string }).status === 'cancelled') {
+      return jsonResponse(
+        { error: 'الطلب ده اتلغى لأنه ماتدفعش في الوقت المحدد. اعمل طلب جديد أو تواصل معنا.' },
+        410
+      )
+    }
+
     const { enabled, secretKey, publicKey, integrationIds } =
       await loadPaymobConfig(supabase)
 

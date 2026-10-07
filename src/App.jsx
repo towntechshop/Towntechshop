@@ -39,6 +39,7 @@ const AdminReports = lazy(() => import('./admin/AdminReports'))
 const AdminShippingSettings = lazy(() => import('./admin/AdminShippingSettings'))
 const AdminContactMessages = lazy(() => import('./admin/AdminContactMessages'))
 const AdminSiteFeatures = lazy(() => import('./admin/AdminSiteFeatures'))
+const AdminNotifications = lazy(() => import('./admin/AdminNotifications'))
 
 function AdminFallback() {
   return (
@@ -110,6 +111,7 @@ export default function App() {
 
         <Route path="site-settings" element={<AdminSiteSettings />} />
         <Route path="site-features" element={<AdminSiteFeatures />} />
+        <Route path="notifications" element={<AdminNotifications />} />
         <Route path="pages" element={<AdminPages />} />
         <Route path="pages/:slug" element={<EditSitePage />} />
       </Route>
