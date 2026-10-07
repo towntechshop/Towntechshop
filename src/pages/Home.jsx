@@ -10,6 +10,7 @@ import HomeOurWorkSection from '../components/HomeOurWorkSection'
 import HomeDesignBlock from '../components/HomeDesignBlock'
 import HomeCategoryGrid from '../components/HomeCategoryGrid'
 import { TrustBadgesStrip } from '../components/TrustBadges'
+import Reveal from '../components/Reveal'
 import { addToCart } from '../lib/cart'
 import { RETURN_POLICY_SUMMARY, STORE_SEO_DESCRIPTION_LINES } from '../lib/siteContent'
 import { getCategoryPath } from '../lib/categoryUrls'
@@ -502,7 +503,7 @@ export default function Home() {
               <img
                 src={heroImageUrl}
                 alt="Hero"
-                className="block w-full h-auto md:absolute md:inset-0 md:h-full md:w-full md:object-cover md:object-center"
+                className="hero-settle block w-full h-auto md:absolute md:inset-0 md:h-full md:w-full md:object-cover md:object-center"
               />
             ) : (
               <div className="w-full aspect-[1828/728] md:absolute md:inset-0 bg-gradient-to-l from-[#07111F] via-[#0B2A45] to-[#1E5A83]" />
@@ -574,6 +575,7 @@ export default function Home() {
             key={section.id}
             className={sectionIndex % 2 === 0 ? 'bg-[#F4F7FB]' : 'bg-white'}
           >
+            <Reveal>
             <HomeProductSection
               title={section.title}
               subtitle={section.subtitle}
@@ -583,6 +585,7 @@ export default function Home() {
             >
               {section.products.map((product) => renderCarouselProduct(product))}
             </HomeProductSection>
+            </Reveal>
             <SectionDivider />
           </div>
         )

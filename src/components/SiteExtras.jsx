@@ -49,7 +49,7 @@ export function FloatingWhatsAppButton() {
       target="_blank"
       rel="noreferrer"
       aria-label={features.whatsapp_button_label || 'واتساب'}
-      className={`fixed left-4 z-[70] group flex items-center gap-2 bg-[#25D366] text-white rounded-full shadow-lg shadow-emerald-900/20 hover:bg-[#1ebe5b] transition-all p-3.5 md:pl-5 ${
+      className={`whatsapp-ring fixed left-4 z-[70] group flex items-center gap-2 bg-[#25D366] text-white rounded-full shadow-lg shadow-emerald-900/20 hover:bg-[#1ebe5b] transition-all p-3.5 md:pl-5 ${
         lifted ? 'bottom-24 md:bottom-6' : 'bottom-5 md:bottom-6'
       }`}
     >

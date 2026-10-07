@@ -625,7 +625,7 @@ export default function Checkout() {
           </div>
 
           {/* زرار التأكيد الثابت على الموبايل */}
-          <div className="lg:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+          <div className="animate-slide-up lg:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
             <button
               type="submit"
               disabled={loading}

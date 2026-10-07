@@ -466,7 +466,8 @@ export default function Navbar() {
                   <CartIcon className="w-8 h-8" />
 
                   <span
-                    className="absolute -top-2 -right-3 min-w-[22px] h-[22px] px-1 rounded-full text-white text-xs font-black flex items-center justify-center"
+                    key={`cart-badge-${cartCount}`}
+                    className="badge-pop absolute -top-2 -right-3 min-w-[22px] h-[22px] px-1 rounded-full text-white text-xs font-black flex items-center justify-center"
                     style={{ backgroundColor: COLORS.badge }}
                   >
                     {cartCount}
@@ -592,7 +593,8 @@ export default function Navbar() {
                 <CartIcon className="w-7 h-7" />
 
                 <span
-                  className="absolute -top-2 -right-2 min-w-[20px] h-[20px] px-1 rounded-full text-white text-[11px] font-black flex items-center justify-center"
+                  key={`cart-badge-m-${cartCount}`}
+                  className="badge-pop absolute -top-2 -right-2 min-w-[20px] h-[20px] px-1 rounded-full text-white text-[11px] font-black flex items-center justify-center"
                   style={{ backgroundColor: COLORS.badge }}
                 >
                   {cartCount}

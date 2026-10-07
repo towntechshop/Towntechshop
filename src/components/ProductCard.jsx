@@ -47,7 +47,7 @@ export default function ProductCard({
 
   return (
     <article
-      className={`group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-sky-200/70 transition-all duration-200 text-right h-full flex flex-col ${
+      className={`group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-sky-200/70 hover:-translate-y-0.5 transition-all duration-300 text-right h-full flex flex-col ${
         isFill
           ? 'p-3 sm:p-4'
           : isCategory
@@ -161,9 +161,10 @@ export default function ProductCard({
       <div className="mt-auto pt-3">
         {inStock ? (
           <button
+            key={added ? 'added' : 'idle'}
             type="button"
             onClick={() => onAddToCart?.(product)}
-            className="w-full text-white rounded-xl py-2.5 font-black text-xs sm:text-sm transition hover:opacity-90 active:scale-[0.98]"
+            className="added-pop w-full text-white rounded-xl py-2.5 font-black text-xs sm:text-sm transition hover:opacity-90 active:scale-[0.98]"
             style={{ backgroundColor: BRAND_PRIMARY }}
           >
             {added ? (

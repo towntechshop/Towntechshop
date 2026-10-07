@@ -566,9 +566,9 @@ export default function ProductListingPage({
                   type="button"
                   aria-label="إغلاق"
                   onClick={() => setFiltersOpen(false)}
-                  className="absolute inset-0 bg-slate-950/50"
+                  className="animate-fade absolute inset-0 bg-slate-950/50"
                 />
-                <div className="absolute inset-y-0 right-0 w-[86%] max-w-sm bg-[#F4F7FB] shadow-2xl flex flex-col">
+                <div className="animate-drawer absolute inset-y-0 right-0 w-[86%] max-w-sm bg-[#F4F7FB] shadow-2xl flex flex-col">
                   <div className="flex items-center justify-between px-4 py-4 bg-white border-b border-slate-200">
                     <h2 className="text-lg font-black text-slate-950">الفلترة والأقسام</h2>
                     <button
