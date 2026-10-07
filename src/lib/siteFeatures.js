@@ -20,6 +20,10 @@ export const DEFAULT_SITE_FEATURES = {
   home_banners_enabled: true,
   home_banners: [], // [{ image_url, link, alt }] لحد 3 بانرات
 
+  // أدوات القياس
+  ga4_id: '',
+  meta_pixel_id: '',
+
   // شعارات طرق الدفع الرسمية (اختياري) — لو فاضية بتظهر أيقونة
   payment_logos: {},
   product_payment_methods_enabled: true,

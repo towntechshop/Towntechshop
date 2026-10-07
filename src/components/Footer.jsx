@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import useSiteSettings from '../hooks/useSiteSettings'
+import { supabase } from '../lib/supabase'
 import PaymentMethodsRow from './PaymentMethods'
 import {
   STORE_BRANCHES,
@@ -129,9 +130,31 @@ export default function Footer() {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  const handleNewsletterSubmit = (event) => {
+  const [newsletterError, setNewsletterError] = useState('')
+  const [newsletterSending, setNewsletterSending] = useState(false)
+
+  const handleNewsletterSubmit = async (event) => {
     event.preventDefault()
-    if (!email.trim()) return
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail) return
+
+    setNewsletterError('')
+    setNewsletterSending(true)
+
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .insert({ email: cleanEmail, source: 'footer' })
+
+    setNewsletterSending(false)
+
+    // 23505 = الإيميل مشترك قبل كده — نعتبره نجاح
+    if (error && error.code !== '23505') {
+      setNewsletterError(
+        error.code === '23514' ? 'اكتب إيميل صحيح.' : 'حصلت مشكلة، حاول تاني.'
+      )
+      return
+    }
+
     setSubscribed(true)
     setEmail('')
   }
@@ -242,18 +265,28 @@ export default function Footer() {
             >
               <input
                 type="email"
+                required
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="بريدك الإلكتروني"
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  setNewsletterError('')
+                  setSubscribed(false)
+                }}
+                placeholder={newsletterError || 'بريدك الإلكتروني'}
+                aria-invalid={Boolean(newsletterError)}
+                aria-label="بريدك الإلكتروني"
                 className="w-full h-12 px-4 rounded-xl md:rounded-full bg-white text-slate-900 outline-none text-right font-bold placeholder:text-slate-400 md:bg-transparent"
               />
               <button
                 type="submit"
                 className="w-full md:w-auto flex-shrink-0 h-12 px-8 rounded-full bg-[#1D4ED8] text-white font-black hover:bg-[#1E40AF] transition text-sm md:text-base"
               >
-                {subscribed ? 'تم ✓' : 'إشترك'}
+                {newsletterSending ? '...' : subscribed ? 'تم الاشتراك ✓' : 'اشترك'}
               </button>
             </form>
+            {newsletterError && (
+              <p className="text-sm font-bold text-red-300">{newsletterError}</p>
+            )}
           </div>
         </div>
       </div>

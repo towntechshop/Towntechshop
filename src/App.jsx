@@ -19,6 +19,7 @@ import OurWork from './pages/OurWork'
 import DynamicPage from './pages/DynamicPage'
 
 import Payment from './pages/Payment'
+import NotFound from './pages/NotFound'
 
 // لوحة التحكم بتتحمّل بس لما الأدمن يفتحها (الموقع أخف وأسرع للعملاء)
 const AdminLogin = lazy(() => import('./admin/AdminLogin'))
@@ -40,6 +41,7 @@ const AdminShippingSettings = lazy(() => import('./admin/AdminShippingSettings')
 const AdminContactMessages = lazy(() => import('./admin/AdminContactMessages'))
 const AdminSiteFeatures = lazy(() => import('./admin/AdminSiteFeatures'))
 const AdminNotifications = lazy(() => import('./admin/AdminNotifications'))
+const AdminSubscribers = lazy(() => import('./admin/AdminSubscribers'))
 
 function AdminFallback() {
   return (
@@ -83,6 +85,7 @@ export default function App() {
           element={<DynamicPage slug="shipping-policy" />}
         />
         <Route path="/terms" element={<DynamicPage slug="terms" />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
 
       <Route path="/admin/login" element={<AdminLogin />} />
@@ -112,11 +115,11 @@ export default function App() {
         <Route path="site-settings" element={<AdminSiteSettings />} />
         <Route path="site-features" element={<AdminSiteFeatures />} />
         <Route path="notifications" element={<AdminNotifications />} />
+        <Route path="subscribers" element={<AdminSubscribers />} />
         <Route path="pages" element={<AdminPages />} />
         <Route path="pages/:slug" element={<EditSitePage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>
   )

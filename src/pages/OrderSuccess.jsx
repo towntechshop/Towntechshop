@@ -6,7 +6,8 @@ import {
   clearPendingPaymentOrder,
   readRecentPlacedOrder,
 } from '../lib/cart'
-import { saveCustomerOrder } from '../lib/customerOrders'
+import { getCustomerOrders, saveCustomerOrder } from '../lib/customerOrders'
+import { trackPurchase } from '../lib/analytics'
 
 export default function OrderSuccess() {
   const [searchParams] = useSearchParams()
@@ -30,12 +31,23 @@ export default function OrderSuccess() {
 
   const recentOrder = useMemo(() => readRecentPlacedOrder(), [])
 
+  const purchaseValue = useMemo(
+    () => getCustomerOrders().find((order) => order.orderId === orderId)?.totalAmount || 0,
+    [orderId]
+  )
+
   const orderNumber =
     orderNumberFromUrl ||
     (recentOrder?.orderId === orderId ? recentOrder?.orderNumber : null)
 
   const phone =
     recentOrder?.orderId === orderId ? recentOrder?.phone : null
+
+  useEffect(() => {
+    if (orderId && (paymentState === 'order' || paymentState === 'paid')) {
+      trackPurchase({ orderId, orderNumber: orderNumberFromUrl, value: purchaseValue })
+    }
+  }, [orderId, paymentState, orderNumberFromUrl, purchaseValue])
 
   useEffect(() => {
     if (orderId) {

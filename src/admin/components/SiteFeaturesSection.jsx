@@ -289,6 +289,34 @@ export default function SiteFeaturesSection({ value, onChange }) {
         />
       </Group>
 
+      <Group title="أدوات القياس والإعلانات">
+        <p className="text-sm text-slate-600 font-bold leading-7">
+          بتعرّفك عدد الزوار ومنين جم، وأي إعلان جاب مبيعات. الموقع بيبعت تلقائياً: زيارة الصفحات، الإضافة للسلة، بدء إتمام الطلب، والشراء.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Google Analytics 4 — Measurement ID" hint="من analytics.google.com ← Admin ← Data streams. شكله G-XXXXXXXXXX">
+            <input
+              type="text"
+              value={features.ga4_id}
+              onChange={(event) => update('ga4_id', event.target.value.trim())}
+              placeholder="G-XXXXXXXXXX"
+              className={`${inputClass} text-left`}
+              dir="ltr"
+            />
+          </Field>
+          <Field label="Meta (فيسبوك/إنستجرام) Pixel ID" hint="من business.facebook.com ← Events Manager. رقم بس">
+            <input
+              type="text"
+              value={features.meta_pixel_id}
+              onChange={(event) => update('meta_pixel_id', event.target.value.replace(/\D/g, ''))}
+              placeholder="123456789012345"
+              className={`${inputClass} text-left`}
+              dir="ltr"
+            />
+          </Field>
+        </div>
+      </Group>
+
       <Group title="طرق الدفع">
         <Toggle
           checked={features.product_payment_methods_enabled}

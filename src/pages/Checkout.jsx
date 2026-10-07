@@ -15,6 +15,7 @@ import {
 import { saveCustomerOrder } from '../lib/customerOrders'
 import { parsePlacedOrderResult } from '../lib/orderTracking'
 import { BRAND_MARKS, PaymentIcon } from '../components/PaymentMethods'
+import { trackBeginCheckout } from '../lib/analytics'
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -75,6 +76,13 @@ export default function Checkout() {
   useEffect(() => {
     const cartItems = getCartItems()
     setItems(cartItems)
+
+    if (cartItems.length > 0) {
+      trackBeginCheckout(
+        cartItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
+        cartItems.length
+      )
+    }
 
     if (cartItems.length === 0) {
       navigate('/cart')

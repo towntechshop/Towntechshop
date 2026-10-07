@@ -1,3 +1,4 @@
+import { trackAddToCart } from './analytics'
 const MAIN_CART_KEY = 'website_cart'
 const OLD_CART_KEY = 'towntech_cart'
 export const CHECKOUT_ORDER_NOTES_KEY = 'checkout_order_notes'
@@ -60,6 +61,7 @@ export function getCartSubtotal() {
 }
 
 export function addToCart(product, quantity = 1) {
+  trackAddToCart(product, Number(quantity || 1))
   const items = getCartItems()
   const price = getProductPrice(product)
   const existingItem = items.find((item) => item.id === product.id)
