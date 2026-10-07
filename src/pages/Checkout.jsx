@@ -14,7 +14,7 @@ import {
 } from '../lib/cart'
 import { saveCustomerOrder } from '../lib/customerOrders'
 import { parsePlacedOrderResult } from '../lib/orderTracking'
-import { PaymentIcon } from '../components/PaymentMethods'
+import { BRAND_MARKS, PaymentIcon } from '../components/PaymentMethods'
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -472,7 +472,7 @@ export default function Checkout() {
                           className="sr-only"
                         />
                         <span
-                          className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                          className={`flex-shrink-0 min-w-10 h-10 px-0.5 rounded-lg flex items-center justify-center ${
                             selected ? 'bg-[#0B1F3A] text-white' : 'bg-slate-100 text-slate-600'
                           }`}
                         >
@@ -482,6 +482,12 @@ export default function Checkout() {
                               alt=""
                               className="w-8 h-8 object-contain bg-white rounded"
                             />
+                          ) : BRAND_MARKS[option.id] ? (
+                            <span className="flex items-center gap-1 bg-white rounded-md px-1.5 py-1" dir="ltr">
+                              {BRAND_MARKS[option.id].map((mark) => (
+                                <img key={mark.src} src={mark.src} alt={mark.alt} className={`${mark.className} w-auto`} />
+                              ))}
+                            </span>
                           ) : (
                             <PaymentIcon name={option.icon} />
                           )}

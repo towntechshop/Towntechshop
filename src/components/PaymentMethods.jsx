@@ -2,6 +2,15 @@ import useSiteSettings from '../hooks/useSiteSettings'
 
 // طرق الدفع المفعّلة في الموقع + أيقوناتها
 // لو رفعت شعار رسمي لأي طريقة من لوحة التحكم ← مميزات الموقع، بيظهر بدل الأيقونة
+// علامات القبول الرسمية (من مكتبة Simple Icons) — public/payment
+export const BRAND_MARKS = {
+  paymob: [
+    { src: '/payment/visa.svg', alt: 'Visa', className: 'h-4' },
+    { src: '/payment/mastercard.svg', alt: 'Mastercard', className: 'h-6' },
+  ],
+  vodafone_cash: [{ src: '/payment/vodafone.svg', alt: 'Vodafone', className: 'h-5' }],
+}
+
 export function getPaymentMethods(settings, features) {
   const logos = features?.payment_logos || {}
 
@@ -12,7 +21,11 @@ export function getPaymentMethods(settings, features) {
     { id: 'instapay', label: 'إنستا باي', short: 'تحويل', icon: 'bank', enabled: Boolean(settings?.enable_instapay) },
   ]
     .filter((method) => method.enabled)
-    .map((method) => ({ ...method, logo: logos[method.id] || '' }))
+    .map((method) => ({
+      ...method,
+      logo: logos[method.id] || '',
+      brandMarks: BRAND_MARKS[method.id] || [],
+    }))
 }
 
 export function PaymentIcon({ name, className = 'w-5 h-5' }) {
@@ -76,6 +89,15 @@ export function PaymentBadge({ method, tone = 'light', size = 'md' }) {
     >
       {method.logo ? (
         <img src={method.logo} alt={method.label} className="h-6 w-auto max-w-[72px] object-contain" />
+      ) : method.brandMarks?.length ? (
+        <>
+          <span className="flex items-center gap-1.5" dir="ltr">
+            {method.brandMarks.map((mark) => (
+              <img key={mark.src} src={mark.src} alt={mark.alt} className={`${mark.className} w-auto`} />
+            ))}
+          </span>
+          {method.short === 'كارت' ? null : method.label}
+        </>
       ) : (
         <>
           <PaymentIcon name={method.icon} className="w-5 h-5 text-[#1D4ED8]" />
