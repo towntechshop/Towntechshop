@@ -507,14 +507,14 @@ export default function Home() {
 
       <h1 className="sr-only">Town Tech - أنظمة المراقبة والإلكترونيات</h1>
 
+      <HomeWhyUs />
+
       {features.home_category_grid_enabled && categoryTiles.length >= 2 && (
         <HomeCategoryGrid
           title={features.home_category_grid_title || 'تسوق حسب القسم'}
           tiles={categoryTiles}
         />
       )}
-
-      <HomeWhyUs />
 
       <SectionDivider />
 
