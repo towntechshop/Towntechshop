@@ -1104,21 +1104,24 @@ export default function AdminSiteSettings() {
           <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-6">
             <div>
               <Field label="صورة الهيرو">
-                <div className="w-full aspect-[1828/728] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden mb-4">
+                <p className="text-xs text-slate-500 font-bold mb-2">
+                  الصورة بتظهر كاملة في الموقع بمقاسها. المقاس المناسب: 1920 × 640 بكسل (عرض 3 أضعاف الطول).
+                </p>
+                <div className="w-full bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden mb-4">
                   {heroImageFile ? (
                     <img
                       src={URL.createObjectURL(heroImageFile)}
                       alt="Hero Preview"
-                      className="w-full h-full object-cover"
+                      className="block w-full h-auto"
                     />
                   ) : settings.hero_image_url ? (
                     <img
                       src={settings.hero_image_url}
                       alt="Current Hero"
-                      className="w-full h-full object-cover"
+                      className="block w-full h-auto"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 font-black">
+                    <div className="w-full aspect-[3/1] flex items-center justify-center text-slate-400 font-black">
                       بدون صورة
                     </div>
                   )}

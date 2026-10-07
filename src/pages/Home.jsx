@@ -488,19 +488,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F4F7FB]" dir="rtl">
-      <section className="p-0 md:px-4 md:py-5">
-        <div className="w-full md:max-w-[1500px] md:mx-auto">
-          <div className="relative w-full overflow-hidden rounded-none md:rounded-3xl md:ring-1 md:ring-slate-200/70 shadow-none md:shadow-sm bg-[#1a0505] md:h-[460px] lg:h-[500px] xl:h-[520px]">
+      {/* البانر الرئيسي: الصورة بتظهر كاملة بمقاسها الطبيعي على كل الشاشات (من غير قص) */}
+      <section className="px-3 pt-3 pb-1 sm:px-4 md:pt-5 md:pb-2">
+        <div className="max-w-[1500px] mx-auto">
+          <div className="hero-frame group relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0B1F3A] shadow-[0_20px_45px_-28px_rgba(11,31,58,0.75)] ring-1 ring-slate-900/5">
             {heroImageUrl ? (
               <img
                 src={heroImageUrl}
-                alt="Hero"
-                className="hero-settle block w-full h-auto md:absolute md:inset-0 md:h-full md:w-full md:object-cover md:object-center"
+                alt="Town Tech"
+                width="1920"
+                height="640"
+                fetchPriority="high"
+                className="hero-settle block w-full h-auto transition-transform duration-[1.2s] ease-out md:group-hover:scale-[1.015]"
               />
             ) : (
-              <div className="w-full aspect-[1828/728] md:absolute md:inset-0 bg-gradient-to-l from-[#07111F] via-[#0B2A45] to-[#1E5A83]" />
+              <div className="w-full aspect-[3/1] bg-gradient-to-l from-[#07111F] via-[#0B2A45] to-[#1E5A83]" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#07111F]/10 via-transparent to-transparent pointer-events-none hidden md:block" />
+            <span aria-hidden="true" className="hero-shine pointer-events-none absolute inset-0" />
           </div>
         </div>
       </section>

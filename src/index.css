@@ -429,3 +429,21 @@ body {
     animation: none;
   }
 }
+
+/* ===== البانر الرئيسي: لمعة بتعدي مرة كل شوية ===== */
+.hero-shine {
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.18) 50%, transparent 60%);
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  animation: hero-shine 7s ease-in-out 1.6s infinite;
+}
+
+@keyframes hero-shine {
+  0% {
+    background-position: 150% 0;
+  }
+  30%,
+  100% {
+    background-position: -100% 0;
+  }
+}
